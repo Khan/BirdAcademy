@@ -15,8 +15,8 @@ weeCloud.currentX = 400;
 
 const fencePosts = loadImage("fence");
 const firstFencePostCenterX = 32;
-const fencePostSpacing = 76.5;
-const fencePostY = 750;
+const fencePostSpacing = 76;
+const fencePostY = 700;
 
 const skySpacing = 140;
 
@@ -166,6 +166,13 @@ class Post {
 		this.bird = null;
 	}
 
+	static highlightImage() {
+		if (this._highlightImage === undefined) {
+			this._highlightImage = loadImage("fence post brightener");
+		}
+		return this._highlightImage;
+	}
+
 	update() {
 		if (!this.lastPressed && Mouse.pressed) {
 			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + this.width) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + this.height);
@@ -188,7 +195,7 @@ class Post {
 						this.bird = bird;
 
 						bird.targetX = this.originX + this.width / 2.0;
-						bird.targetY = this.originY - Bird.height() / 2.0;
+						bird.targetY = this.originY - 15;
 						skySpots[bird.positionIndex] = false;
 						bird.flying = false;
 						break;
@@ -201,6 +208,15 @@ class Post {
 			this.pressed = false;
 		}
 		this.lastPressed = Mouse.pressed;
+	}
+
+	draw() {
+		if (this.pressed) {
+			ctx.save();
+			ctx.globalAlpha = 0.5;
+			ctx.drawImage(Post.highlightImage(), this.originX, this.originY);
+			ctx.restore();
+		}
 	}
 }
 
@@ -238,13 +254,14 @@ window.render = () => {
 
 	ctx.drawImage(fencePosts, 0, 0);
 
+	for (var post of posts) {
+		post.update();
+		post.draw();
+	}
+
 	for (var bird of birds) {
 		bird.update();
 		bird.draw();
-	}
-
-	for (var post of posts) {
-		post.update();
 	}
 
 	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
