@@ -19,6 +19,7 @@ const fencePostSpacing = 6;
 const fencePostY = 840;
 
 const skySpacing = 140;
+const skySlotsY = 400;
 
 let birdImages = [];
 for (let birdImageIndex = 0; birdImageIndex < 10; birdImageIndex++) {
@@ -108,7 +109,7 @@ function updateCounterValues() {
 	skyCounter.value = skySpots.filter((el) => { return el === true }).length;
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
 }
-let skyCounter = new Counter(1050, 125, "flying");
+let skyCounter = new Counter(1050, skySlotsY, "flying");
 let fencePostCounter = new Counter(1050, 800, "sitting");
 
 
@@ -189,7 +190,7 @@ class Post {
 
 				// TODO abstract magic numbers
 				this.bird.targetX = 100 + availableSkySpotIndex * skySpacing;
-				this.bird.targetY = 100;
+				this.bird.targetY = skySlotsY;
 				this.bird.flying = true;
 				this.bird.positionIndex = availableSkySpotIndex;
 
@@ -230,7 +231,7 @@ class Post {
 
 let birds = [];
 for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
-	const bird = new Bird(100 + birdIndex * skySpacing, 100);
+	const bird = new Bird(100 + birdIndex * skySpacing, skySlotsY);
 	bird.positionIndex = birdIndex;
 	birds.push(bird);
 	skySpots[birdIndex] = true;
@@ -256,8 +257,8 @@ window.render = () => {
 
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 
-	ctx.drawImage(mamaCloud, mamaCloud.currentX, 150);
-	ctx.drawImage(weeCloud, weeCloud.currentX, 250);
+	ctx.drawImage(mamaCloud, mamaCloud.currentX, 200);
+	ctx.drawImage(weeCloud, weeCloud.currentX, 300);
 
 	ctx.drawImage(fencePosts, 0, 0);
 
