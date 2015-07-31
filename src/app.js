@@ -86,12 +86,12 @@ class Counter {
 		ctx.globalCompositeOperation = "multiply";
 		ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
 		ctx.shadowBlur = 30;
-		ctx.fillStyle = "rgba(255, 255, 255, 0.7)"; // white 70%
+		ctx.fillStyle = "rgba(0, 0, 0, 0.33)"; // white 70%
 		ctx.fill();
 		ctx.restore();
 
 		ctx.save();
-		ctx.fillStyle = "#253441";
+		ctx.fillStyle = "white";
 
 		ctx.font = "200 60px 'Proxima Nova'";
 		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
