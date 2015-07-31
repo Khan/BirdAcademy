@@ -14,8 +14,8 @@ const weeCloud = loadImage("wee cloud");
 weeCloud.currentX = 400;
 
 const fencePosts = loadImage("fence");
-const firstFencePostX = 32;
-const fencePostSpacing = 77;
+const firstFencePostCenterX = 32;
+const fencePostSpacing = 76.5;
 const fencePostY = 750;
 
 const skySpacing = 140;
@@ -27,10 +27,6 @@ for (let birdImageIndex = 0; birdImageIndex < 10; birdImageIndex++) {
 }
 let birdSittingImage = loadImage("peep sit");
 
-let fenceSpots = [];
-for (let fencePostIndex = 0; fencePostIndex < 9; fencePostIndex++) {
-	fenceSpots.push(false);
-}
 
 let skySpots = [];
 for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
@@ -108,15 +104,14 @@ class Counter {
 }
 
 
+function updateCounterValues() {
+	skyCounter.value = skySpots.filter((el) => { return el === true }).length;
+	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
+}
+let skyCounter = new Counter(1050, 125, "flying");
+let fencePostCounter = new Counter(1050, 650, "sitting");
 
-let skyCounter = new Counter(1100, 125, "flying");
-skyCounter.value = 5;
 
-let fencePostCounter = new Counter(1100, 650, "sitting");
-fencePostCounter.value = 0;
-
-
-let someBirdIsBeingDragged = false;
 class Bird {
 	constructor(x, y) {
 		this.x = x;
@@ -134,60 +129,11 @@ class Bird {
 		return birdImages[0].width;
 	}
 
-	static hitBoxWidth() { return 62; }
-	static hitBoxHeight() { return 72; }
-
 	static height() {
 		return birdImages[0].height;
 	}
 
 	update() {
-		if (!this.dragged) {
-			if (Mouse.pressed && !this.lastPressed && !someBirdIsBeingDragged) {
-				const dx = Mouse.x - this.x;
-				const dy = Mouse.y - this.y;
-				if (Math.abs(dx) < Bird.hitBoxWidth() / 2.0 && Math.abs(dy) < Bird.hitBoxHeight() / 2.0) {
-					this.dragged = true;
-					someBirdIsBeingDragged = true;
-				}
-			}
-		} else {
-			if (!Mouse.pressed) {
-				if (this.flying) {
-					var availableFencePostIndex = fenceSpots.findIndex((el) => { return el === false });
-					console.log(availableFencePostIndex);
-					skySpots[this.positionIndex] = false
-					fenceSpots[availableFencePostIndex] = true;
-					this.positionIndex = availableFencePostIndex;
-
-					this.targetX = firstFencePostX + availableFencePostIndex * fencePostSpacing;
-					this.targetY = fencePostY - Bird.height() / 2.0;
-					this.flying = false;
-
-					fencePostCounter.value++;
-					skyCounter.value--;
-				} else {
-					var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
-					console.log(availableSkySpotIndex);
-					this.targetX = 100 + availableSkySpotIndex * skySpacing;
-					this.targetY = 100;
-					this.flying = true;
-
-					fenceSpots[this.positionIndex] = false;
-					skySpots[availableSkySpotIndex] = true;
-					this.positionIndex = availableSkySpotIndex;
-
-					fencePostCounter.value--;
-					skyCounter.value++;
-				}
-
-				someBirdIsBeingDragged = false;
-				this.dragged = false;
-			}
-		}
-
-		this.lastPressed = Mouse.pressed
-
 		const speed = 0.15;
 		this.x = this.x * (1.0 - speed) + this.targetX * speed;
 		this.y = this.y * (1.0 - speed) + this.targetY * speed;
@@ -211,6 +157,53 @@ class Bird {
 	}
 }
 
+class Post {
+	constructor(originX, originY) {
+		this.originX = originX;
+		this.originY = originY;
+		this.width = 69;
+		this.height = 182;
+		this.bird = null;
+	}
+
+	update() {
+		if (!this.lastPressed && Mouse.pressed) {
+			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + this.width) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + this.height);
+		} else if (this.pressed && !Mouse.pressed) {
+			if (this.bird !== null) {
+				var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
+
+				// TODO abstract magic numbers
+				this.bird.targetX = 100 + availableSkySpotIndex * skySpacing;
+				this.bird.targetY = 100;
+				this.bird.flying = true;
+				this.bird.positionIndex = availableSkySpotIndex;
+
+				skySpots[availableSkySpotIndex] = true;
+				this.bird = null;
+			} else {
+				// Find a flying bird; make it fly here.
+				for (var bird of birds) {
+					if (bird.flying) {
+						this.bird = bird;
+
+						bird.targetX = this.originX + this.width / 2.0;
+						bird.targetY = this.originY - Bird.height() / 2.0;
+						skySpots[bird.positionIndex] = false;
+						bird.flying = false;
+						break;
+					}
+				}
+			}
+
+			updateCounterValues();
+
+			this.pressed = false;
+		}
+		this.lastPressed = Mouse.pressed;
+	}
+}
+
 
 let birds = [];
 for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
@@ -219,6 +212,13 @@ for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
 	birds.push(bird);
 	skySpots[birdIndex] = true;
 }
+
+let posts = [];
+for (let postIndex = 0; postIndex < 9; postIndex++) {
+	posts.push(new Post(postIndex * fencePostSpacing, fencePostY))
+}
+
+updateCounterValues();
 
 window.render = () => {
 	mamaCloud.currentX -= 0.3
@@ -241,6 +241,10 @@ window.render = () => {
 	for (var bird of birds) {
 		bird.update();
 		bird.draw();
+	}
+
+	for (var post of posts) {
+		post.update();
 	}
 
 	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
