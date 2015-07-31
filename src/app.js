@@ -232,20 +232,24 @@ class Post {
 
 
 let birds = [];
-for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
-	const bird = new Bird(100 + birdIndex * skySpacing, skySlotsY);
-	bird.positionIndex = birdIndex;
-	birds.push(bird);
-	skySpots[birdIndex] = true;
-}
 
 let posts = [];
 for (let postIndex = 0; postIndex < 9; postIndex++) {
 	posts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), fencePostY))
 }
 
-updateCounterValues();
 
+function addBird() {
+	const bird = new Bird(-Bird.width(), skySlotsY);
+	bird.targetX = 100;
+	bird.positionIndex = 0;
+	birds.push(bird);
+	skySpots[0] = true;
+}
+
+addBird();
+
+let dateWhenSkyEmptied = null;
 window.render = () => {
 	mamaCloud.currentX -= 0.3
 	if (mamaCloud.currentX < -(mamaCloud.width + 100)) {
@@ -269,15 +273,31 @@ window.render = () => {
 		post.draw();
 	}
 
+	for (var hill of hills) {
+		ctx.drawImage(hill, 0, 0);
+	}
+
 	for (var bird of birds) {
 		bird.update();
 		bird.draw();
 	}
 
+
+	updateCounterValues();
 	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
 	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
 	skyCounter.draw();
 	fencePostCounter.draw();
+
+	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
+	if (numberOfBirdsInSky === 0) {
+		if (dateWhenSkyEmptied === null) {
+			dateWhenSkyEmptied = Date.now();
+		} else if (Date.now() - dateWhenSkyEmptied > 500) {
+			addBird();
+			dateWhenSkyEmptied = null;
+		}
+	}
 }
 
 
