@@ -16,39 +16,87 @@ weeCloud.currentX = 400;
 const fencePosts = loadImage("fence");
 const firstFencePostX = 643;
 const fencePostSpacing = 78;
-const fencePostY = 695;
+const fencePostY = 750;
 
+const skySpacing = 140;
+
+let birdImages = [];
+for (let birdImageIndex = 0; birdImageIndex < 10; birdImageIndex++) {
+	const birdImage = loadImage("peep animation/peep_0" + birdImageIndex);
+	birdImages.push(birdImage);
+}
+let birdSittingImage = loadImage("peep sit");
+
+let fenceSpots = [];
+for (let fencePostIndex = 0; fencePostIndex < 9; fencePostIndex++) {
+	fenceSpots.push(false);
+}
+
+let skySpots = [];
+for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
+	skySpots.push(false);
+}
+
+let someBirdIsBeingDragged = false;
 class Bird {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
 		this.targetX = this.x;
 		this.targetY = this.y;
-		this.width = 50;
-		this.height = 50;
 		this.flying = true;
+		this.phase = Math.random() % (2 * Math.PI);
+		this.frequencyX = 800 + Math.random() % 200;
+		this.frequencyY = 600 + Math.random() % 150;
+		this.animationIndex = Math.floor(Math.random() % birdImages.length);
+	}
+
+	static width() {
+		return birdImages[0].width;
+	}
+
+	static hitBoxWidth() { return 62; }
+	static hitBoxHeight() { return 72; }
+
+	static height() {
+		return birdImages[0].height;
 	}
 
 	update() {
 		if (!this.dragged) {
-			if (Mouse.pressed && !this.lastPressed) {
+			if (Mouse.pressed && !this.lastPressed && !someBirdIsBeingDragged) {
 				const dx = Mouse.x - this.x;
 				const dy = Mouse.y - this.y;
-				if (Math.abs(dx) < this.width / 2.0 && Math.abs(dy) < this.height / 2.0) {
+				if (Math.abs(dx) < Bird.hitBoxWidth() / 2.0 && Math.abs(dy) < Bird.hitBoxHeight() / 2.0) {
 					this.dragged = true;
+					someBirdIsBeingDragged = true;
 				}
 			}
 		} else {
 			if (!Mouse.pressed) {
 				if (this.flying) {
-					this.targetX = firstFencePostX;
-					this.targetY = fencePostY - this.height / 2.0;
+					var availableFencePostIndex = fenceSpots.findIndex((el) => { return el === false });
+					console.log(availableFencePostIndex);
+					skySpots[this.positionIndex] = false
+					fenceSpots[availableFencePostIndex] = true;
+					this.positionIndex = availableFencePostIndex;
+
+					this.targetX = firstFencePostX + availableFencePostIndex * fencePostSpacing;
+					this.targetY = fencePostY - Bird.height() / 2.0;
 					this.flying = false;
 				} else {
-					this.targetX = 100;
+					var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
+					console.log(availableSkySpotIndex);
+					this.targetX = 100 + availableSkySpotIndex * skySpacing;
 					this.targetY = 100;
 					this.flying = true;
+
+					fenceSpots[this.positionIndex] = false;
+					skySpots[availableSkySpotIndex] = true;
+					this.positionIndex = availableSkySpotIndex;
 				}
+
+				someBirdIsBeingDragged = false;
 				this.dragged = false;
 			}
 		}
@@ -60,21 +108,31 @@ class Bird {
 		this.y = this.y * (1.0 - speed) + this.targetY * speed;
 
 		if (this.flying) {
-			this.x += Math.sin(Date.now() / 1000) * 5
-			this.y += Math.sin(Date.now() / 1250) * 3
+			this.x += Math.sin(Date.now() / this.frequencyX + this.phase) * 5
+			this.y += Math.sin(Date.now() / this.frequencyY + this.phase) * 3
 		}
 	}
 
 	draw() {
-		ctx.save();
-		ctx.beginPath();
-		ctx.ellipse(this.x, this.y, this.width / 2.0, this.height / 2.0, 0, 0, 2 * Math.PI)
-		ctx.fill();
-		ctx.restore();
+		let image;
+		if (!this.flying && Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1) {
+			image = birdSittingImage;
+		} else {
+			image = birdImages[this.animationIndex];
+		}
+
+		ctx.drawImage(image, this.x - Bird.width() / 2.0, this.y - Bird.height() / 2.0);
+		this.animationIndex = (this.animationIndex + 1) % birdImages.length
 	}
 }
 
-const bird = new Bird(100, 100);
+let birds = [];
+for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
+	const bird = new Bird(100 + birdIndex * skySpacing, 100);
+	bird.positionIndex = birdIndex;
+	birds.push(bird);
+	skySpots[birdIndex] = true;
+}
 
 window.render = () => {
 	mamaCloud.currentX -= 0.3
@@ -94,8 +152,10 @@ window.render = () => {
 
 	ctx.drawImage(fencePosts, 0, 0);
 
-	bird.update();
-	bird.draw();
+	for (var bird of birds) {
+		bird.update();
+		bird.draw();
+	}
 }
 
 
