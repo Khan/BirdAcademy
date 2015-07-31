@@ -231,6 +231,33 @@ class Post {
 	}
 }
 
+class Wave {
+	static images() {
+		if (this._images === undefined) {
+			this._images = [loadImage("wave 1"), loadImage("wave 2")];
+		}
+		return this._images;
+	}
+
+	constructor(x, y, imageIndex) {
+		this.initialX = x;
+		this.initialY = y;
+		this.imageIndex = imageIndex;
+		this.frequency = 1000 + (Math.random() % 1000);
+		this.amplitudeX = 25
+		this.amplitudeY = 10
+	}
+
+	update() {
+		this.x = Math.sin(Date.now() / this.frequency) * this.amplitudeX + this.initialX;
+		this.y = Math.cos(Date.now() / this.frequency) * this.amplitudeY + this.initialY;
+	}
+
+	draw() {
+		ctx.drawImage(Wave.images()[this.imageIndex], this.x, this.y);
+	}
+}
+
 
 let birds = [];
 
@@ -238,6 +265,13 @@ let posts = [];
 for (let postIndex = 0; postIndex < 9; postIndex++) {
 	posts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), fencePostY))
 }
+
+let waves = [
+	new Wave(86, 1740, 0),
+	new Wave(126, 1780, 1),
+	new Wave(106, 1810, 0),
+	new Wave(86, 1840, 1)
+];
 
 
 function addBird() {
@@ -274,7 +308,12 @@ window.render = () => {
 		post.draw();
 	}
 
-	for (var hill of hills) {
+	ctx.drawImage(hills[0], 0, 0);
+	for (var wave of waves) {
+		wave.update();
+		wave.draw();
+	}
+	for (var hill of hills.slice(1)) {
 		ctx.drawImage(hill, 0, 0);
 	}
 
@@ -282,7 +321,6 @@ window.render = () => {
 		bird.update();
 		bird.draw();
 	}
-
 
 	updateCounterValues();
 	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
