@@ -14,9 +14,9 @@ const weeCloud = loadImage("wee cloud");
 weeCloud.currentX = 400;
 
 const fencePosts = loadImage("fence");
-const firstFencePostCenterX = 32;
-const fencePostSpacing = 76;
-const fencePostY = 700;
+const firstFencePostOriginX = 6;
+const fencePostSpacing = 6;
+const fencePostY = 840;
 
 const skySpacing = 140;
 
@@ -109,7 +109,7 @@ function updateCounterValues() {
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
 }
 let skyCounter = new Counter(1050, 125, "flying");
-let fencePostCounter = new Counter(1050, 650, "sitting");
+let fencePostCounter = new Counter(1050, 800, "sitting");
 
 
 class Bird {
@@ -161,9 +161,16 @@ class Post {
 	constructor(originX, originY) {
 		this.originX = originX;
 		this.originY = originY;
-		this.width = 69;
 		this.height = 182;
 		this.bird = null;
+	}
+
+	static width() {
+		return 70;
+	}
+
+	static height() {
+		return 182;
 	}
 
 	static highlightImage() {
@@ -174,8 +181,8 @@ class Post {
 	}
 
 	update() {
-		if (!this.lastPressed && Mouse.pressed) {
-			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + this.width) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + this.height);
+		if (Mouse.pressed) {
+			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + Post.width()) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + Post.height());
 		} else if (this.pressed && !Mouse.pressed) {
 			if (this.bird !== null) {
 				var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
@@ -194,7 +201,7 @@ class Post {
 					if (bird.flying) {
 						this.bird = bird;
 
-						bird.targetX = this.originX + this.width / 2.0;
+						bird.targetX = this.originX + Post.width() / 2.0;
 						bird.targetY = this.originY - 15;
 						skySpots[bird.positionIndex] = false;
 						bird.flying = false;
@@ -231,7 +238,7 @@ for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
 
 let posts = [];
 for (let postIndex = 0; postIndex < 9; postIndex++) {
-	posts.push(new Post(postIndex * fencePostSpacing, fencePostY))
+	posts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), fencePostY))
 }
 
 updateCounterValues();
@@ -249,8 +256,8 @@ window.render = () => {
 
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 
-	ctx.drawImage(mamaCloud, mamaCloud.currentX, 50);
-	ctx.drawImage(weeCloud, weeCloud.currentX, 150);
+	ctx.drawImage(mamaCloud, mamaCloud.currentX, 150);
+	ctx.drawImage(weeCloud, weeCloud.currentX, 250);
 
 	ctx.drawImage(fencePosts, 0, 0);
 
