@@ -1,6 +1,8 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+ctx.font = "200 60px 'Proxima Nova'";
+
 function loadImage(name) {
 	const image = new Image();
 	image.src = "img/" + name + ".png";
@@ -36,6 +38,66 @@ let skySpots = [];
 for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
 	skySpots.push(false);
 }
+
+
+class Counter {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+		this.width = 55;
+		this.height = 70;
+	}
+
+	set value(newValue) {
+		this._value = newValue;
+		this.textMetrics = ctx.measureText(newValue);
+	}
+
+	get value() {
+		return this._value;
+	}
+
+	draw() {
+		const counterPadding = 13;
+		const cornerRadius = 5;
+
+		const originX = this.x - this.width / 2.0 - counterPadding;
+		const originY = this.y - this.height / 2.0;
+
+		// Make a round rect...
+		ctx.save();
+		ctx.beginPath();
+		ctx.moveTo(originX + cornerRadius, originY);
+		ctx.lineTo(originX + this.width - cornerRadius, originY);
+		ctx.arcTo(originX + this.width, originY, originX + this.width, originY + cornerRadius, cornerRadius);
+		ctx.lineTo(originX + this.width, originY + this.height - cornerRadius);
+		ctx.arcTo(originX + this.width, originY + this.height, originX + this.width - cornerRadius, originY + this.height, cornerRadius);
+		ctx.lineTo(originX + cornerRadius, originY + this.height);
+		ctx.arcTo(originX, originY + this.height, originX, originY + this.height - cornerRadius, cornerRadius);
+		ctx.lineTo(originX, originY + cornerRadius);
+		ctx.arcTo(originX, originY, originX + cornerRadius, originY, cornerRadius);
+		ctx.globalCompositeOperation = "multiply";
+		ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+		ctx.shadowBlur = 30;
+		ctx.fillStyle = "rgba(255, 255, 255, 0.7)"; // white 70%
+		ctx.fill();
+		ctx.restore();
+
+		ctx.save();
+		ctx.fillStyle = "#253441";
+		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
+		ctx.restore();
+	}
+}
+
+
+
+let skyCounter = new Counter(1100, 125);
+skyCounter.value = 5;
+
+let fencePostCounter = new Counter(1100, 650);
+fencePostCounter.value = 0;
+
 
 let someBirdIsBeingDragged = false;
 class Bird {
@@ -84,6 +146,9 @@ class Bird {
 					this.targetX = firstFencePostX + availableFencePostIndex * fencePostSpacing;
 					this.targetY = fencePostY - Bird.height() / 2.0;
 					this.flying = false;
+
+					fencePostCounter.value++;
+					skyCounter.value--;
 				} else {
 					var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
 					console.log(availableSkySpotIndex);
@@ -94,6 +159,9 @@ class Bird {
 					fenceSpots[this.positionIndex] = false;
 					skySpots[availableSkySpotIndex] = true;
 					this.positionIndex = availableSkySpotIndex;
+
+					fencePostCounter.value--;
+					skyCounter.value++;
 				}
 
 				someBirdIsBeingDragged = false;
@@ -126,6 +194,7 @@ class Bird {
 	}
 }
 
+
 let birds = [];
 for (let birdIndex = 0; birdIndex < 5; birdIndex++) {
 	const bird = new Bird(100 + birdIndex * skySpacing, 100);
@@ -156,6 +225,9 @@ window.render = () => {
 		bird.update();
 		bird.draw();
 	}
+
+	skyCounter.draw();
+	fencePostCounter.draw();
 }
 
 
