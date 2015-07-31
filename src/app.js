@@ -72,8 +72,8 @@ class Counter {
 		const counterPadding = 13;
 		const cornerRadius = 5;
 
-		const originX = this.x - this.width / 2.0 - counterPadding;
-		const originY = this.y - this.height / 2.0;
+		const originX = Math.floor(this.x - this.width / 2.0 - counterPadding);
+		const originY = Math.floor(this.y - this.height / 2.0);
 
 		// Make a round rect...
 		ctx.save();
@@ -243,6 +243,8 @@ window.render = () => {
 		bird.draw();
 	}
 
+	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
+	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
 	skyCounter.draw();
 	fencePostCounter.draw();
 }
