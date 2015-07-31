@@ -13,12 +13,13 @@ mamaCloud.currentX = 100;
 const weeCloud = loadImage("wee cloud");
 weeCloud.currentX = 400;
 
-const fencePosts = loadImage("fence");
+const fencePostsImage = loadImage("fence");
 const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const fencePostY = 840;
 
 const hills = [loadImage("hill 3"), loadImage("hill 4"), loadImage("hill 5"), loadImage("hill 6")];
+const powerLineImage = loadImage("power lines")
 
 const skySpacing = 140;
 const skySlotsY = 400;
@@ -266,7 +267,7 @@ window.render = () => {
 	ctx.drawImage(mamaCloud, mamaCloud.currentX, 200);
 	ctx.drawImage(weeCloud, weeCloud.currentX, 300);
 
-	ctx.drawImage(fencePosts, 0, 0);
+	ctx.drawImage(fencePostsImage, 0, 0);
 
 	for (var post of posts) {
 		post.update();
@@ -288,6 +289,8 @@ window.render = () => {
 	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
 	skyCounter.draw();
 	fencePostCounter.draw();
+
+	ctx.drawImage(powerLineImage, 0, 1248);
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
 	if (numberOfBirdsInSky === 0) {
