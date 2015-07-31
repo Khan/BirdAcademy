@@ -15,7 +15,7 @@ weeCloud.currentX = 400;
 
 const fencePosts = loadImage("fence");
 const firstFencePostX = 32;
-const fencePostSpacing = 78;
+const fencePostSpacing = 77;
 const fencePostY = 750;
 
 const skySpacing = 140;
