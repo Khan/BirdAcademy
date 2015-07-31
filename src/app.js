@@ -1,8 +1,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-ctx.font = "200 60px 'Proxima Nova'";
-
 function loadImage(name) {
 	const image = new Image();
 	image.src = "img/" + name + ".png";
@@ -41,20 +39,33 @@ for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
 
 
 class Counter {
-	constructor(x, y) {
+	constructor(x, y, actionString) {
 		this.x = x;
 		this.y = y;
 		this.width = 55;
 		this.height = 70;
+
+		this.actionString = actionString;
 	}
 
 	set value(newValue) {
 		this._value = newValue;
+
+		ctx.save();
+		ctx.font = Counter.numberFont();
 		this.textMetrics = ctx.measureText(newValue);
+		ctx.restore();
+
+		const birdString = this.value === 1 ? "bird" : "birds";
+		this.descriptionString = birdString + " " + this.actionString;
 	}
 
 	get value() {
 		return this._value;
+	}
+
+	static numberFont() {
+		return "200 60px 'Proxima Nova'";
 	}
 
 	draw() {
@@ -85,17 +96,23 @@ class Counter {
 
 		ctx.save();
 		ctx.fillStyle = "#253441";
+
+		ctx.font = "200 60px 'Proxima Nova'";
 		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
+
+		ctx.font = "200 44px 'Proxima Nova'";
+		const birdString = this.value === 1 ? "bird" : "birds"
+		ctx.fillText(this.descriptionString, originX + this.width + 10, originY + this.height - 14);
 		ctx.restore();
 	}
 }
 
 
 
-let skyCounter = new Counter(1100, 125);
+let skyCounter = new Counter(1100, 125, "flying");
 skyCounter.value = 5;
 
-let fencePostCounter = new Counter(1100, 650);
+let fencePostCounter = new Counter(1100, 650, "sitting");
 fencePostCounter.value = 0;
 
 
