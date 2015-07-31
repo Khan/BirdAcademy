@@ -18,6 +18,8 @@ const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const fencePostY = 840;
 
+const hills = [loadImage("hill 3"), loadImage("hill 4"), loadImage("hill 5"), loadImage("hill 6")];
+
 const skySpacing = 140;
 const skySlotsY = 400;
 
