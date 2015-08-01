@@ -68,6 +68,8 @@ class Counter {
 		return "200 60px 'Proxima Nova'";
 	}
 
+	update() {}
+
 	draw() {
 		const counterPadding = 13;
 		const cornerRadius = 5;
@@ -107,13 +109,40 @@ class Counter {
 	}
 }
 
+class TotalCounter extends Counter {
+	constructor(x) {
+		super(x, 0, "total");
+	}
+
+	update() {
+		super.update();
+		this.y = window.scrollY + window.innerHeight - 100;
+	}
+
+	draw() {
+		super.draw();
+
+		ctx.save();
+		ctx.beginPath();
+		ctx.moveTo(this.x - this.width/2.0 - 40, this.y - this.height/2.0 - 30);
+		ctx.lineTo(this.x + 260 /* so lazy */, this.y - this.height/2.0 - 30);
+		ctx.lineWidth = 3;
+		ctx.lineCapStyle = "round";
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+		ctx.restore();
+	}
+}
+
 
 function updateCounterValues() {
 	skyCounter.value = skySpots.filter((el) => { return el === true }).length;
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
+	totalCounter.value = skyCounter.value + fencePostCounter.value;
 }
 let skyCounter = new Counter(1050, skySlotsY, "flying");
 let fencePostCounter = new Counter(1050, 800, "sitting");
+let totalCounter = new TotalCounter(1050);
 
 
 class Bird {
@@ -287,7 +316,7 @@ class ScrollDownArrow {
 		this.alpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.initialY - ScrollDownArrow.image().height / 2.0)) / 100.0)));
 	}
 
-	render() {
+	draw() {
 		let image = ScrollDownArrow.image();
 
 		ctx.save();
@@ -325,7 +354,7 @@ function addBird() {
 addBird();
 
 let dateWhenSkyEmptied = null;
-window.render = () => {
+function drawScene() {
 	mamaCloud.currentX -= 0.3
 	if (mamaCloud.currentX < -(mamaCloud.width + 100)) {
 		mamaCloud.currentX = canvas.width;
@@ -362,12 +391,6 @@ window.render = () => {
 		bird.draw();
 	}
 
-	updateCounterValues();
-	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
-	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
-	skyCounter.draw();
-	fencePostCounter.draw();
-
 	ctx.drawImage(powerLineImage, 0, 1248);
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
@@ -384,7 +407,16 @@ window.render = () => {
 	}
 
 	scrollDownArrow.update();
-	scrollDownArrow.render();
+	scrollDownArrow.draw();
+
+	updateCounterValues();
+	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
+	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
+	skyCounter.draw();
+	fencePostCounter.draw();
+
+	totalCounter.update();
+	totalCounter.draw();
 }
 
 
@@ -394,5 +426,5 @@ window.requestAnimFrame = window.requestAnimationFrame ||
 	function(callback) { window.setTimeout(callback, 1000/60); };
 	(function animloop(){
 		requestAnimFrame(animloop);
-		render();
+		drawScene();
 	})();
