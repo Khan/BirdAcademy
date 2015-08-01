@@ -19,7 +19,8 @@ const fencePostSpacing = 6;
 const fencePostY = 840;
 
 const skySpacing = 140;
-const skySlotsY = 400;
+const onesSkySlotsY = 400;
+const tensSkySlotsY = 1750;
 
 let birdImages = [];
 for (let birdImageIndex = 0; birdImageIndex < 10; birdImageIndex++) {
@@ -37,12 +38,14 @@ for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
 
 class Counter {
 	constructor(x, y, actionString) {
-		this.x = x;
-		this.y = y;
-		this.width = 55;
+		this.currentX = x;
+		this.currentY = y;
+		this.targetX = x;
+		this.targetY = y;
 		this.height = 70;
-
+		this.opacity = 1.0;
 		this.actionString = actionString;
+		this.enabled = true;
 	}
 
 	set value(newValue) {
@@ -55,6 +58,8 @@ class Counter {
 
 		const birdString = this.value === 1 ? "bird" : "birds";
 		this.descriptionString = birdString + " " + this.actionString;
+
+		this.width = newValue >= 10 ? 80 : 55;
 	}
 
 	get value() {
@@ -65,13 +70,27 @@ class Counter {
 		return "200 60px 'Proxima Nova'";
 	}
 
-	update() {}
+	update() {
+		const opacitySpeed = 0.4;
+		const targetOpacity = this.enabled ? 1.0 : 0.0;
+		this.opacity = this.opacity * (1.0 - opacitySpeed) + targetOpacity * opacitySpeed;
+
+		const positionSpeed = 0.06;
+		this.currentX = this.currentX * (1.0 - positionSpeed) + this.targetX * positionSpeed;
+		this.currentY = this.currentY * (1.0 - positionSpeed) + this.targetY * positionSpeed;
+
+		this.x = this.currentX;
+		this.y = this.currentY;
+	}
 
 	draw() {
+		ctx.save();
+		ctx.globalAlpha = this.opacity;
+
 		const counterPadding = 13;
 		const cornerRadius = 5;
 
-		const originX = Math.floor(this.x - this.width / 2.0 - counterPadding);
+		const originX = Math.floor(this.x - this.width - counterPadding);
 		const originY = Math.floor(this.y - this.height / 2.0);
 
 		// Make a round rect...
@@ -89,19 +108,21 @@ class Counter {
 		ctx.globalCompositeOperation = "multiply";
 		ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
 		ctx.shadowBlur = 30;
-		ctx.fillStyle = "rgba(0, 0, 0, 0.33)"; // white 70%
+		ctx.fillStyle = "rgba(40, 59, 66, 0.33)"; // white 70%
 		ctx.fill();
 		ctx.restore();
 
 		ctx.save();
 		ctx.fillStyle = "white";
 
-		ctx.font = "200 60px 'Proxima Nova'";
+		ctx.font = Counter.numberFont();
 		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
 
 		ctx.font = "200 44px 'Proxima Nova'";
 		const birdString = this.value === 1 ? "bird" : "birds"
 		ctx.fillText(this.descriptionString, originX + this.width + 10, originY + this.height - 14);
+		ctx.restore();
+
 		ctx.restore();
 	}
 }
@@ -109,22 +130,20 @@ class Counter {
 class BirdsFlyingCounter extends Counter {
 	constructor(x, y) {
 		super(x, y, "flying");
-		this.initialX = x;
-		this.initialY = y;
-		this.offsetX = 0;
-		this.offsetY = 0;
+		this.floatOffsetX = 0;
+		this.floatOffsetY = 0;
 	}
 
 	update() {
 		super.update();
 
-		this.offsetX += Math.sin(Date.now() / 3000) * 0.1;
-		this.offsetY += Math.sin(Date.now() / 1800) * 0.3;
+		this.floatOffsetX += Math.sin(Date.now() / 3000) * 0.1;
+		this.floatOffsetY += Math.sin(Date.now() / 1800) * 0.3;
 
-		const scrollingOffset = (currentStage === "ones") ? 0 : Math.max(0, window.scrollY - this.initialY + 150);
+		const scrollingOffset = (currentStage === "ones") ? 0 : Math.max(0, window.scrollY - this.targetY + 150);
 
-		this.x = this.initialX + this.offsetX;
-		this.y = this.initialY + scrollingOffset + this.offsetY;
+		this.x = this.currentX + this.floatOffsetX;
+		this.y = this.currentY + scrollingOffset + this.floatOffsetY;
 	}
 
 	draw() {
@@ -133,13 +152,13 @@ class BirdsFlyingCounter extends Counter {
 }
 
 class TotalCounter extends Counter {
-	constructor(x) {
-		super(x, 0, "total");
+	constructor(x, y) {
+		super(x, y, "total");
 	}
 
 	update() {
 		super.update();
-		this.y = window.scrollY + window.innerHeight - 100;
+		// this.y = window.scrollY + window.innerHeight - 100;
 	}
 
 	draw() {
@@ -147,8 +166,8 @@ class TotalCounter extends Counter {
 
 		ctx.save();
 		ctx.beginPath();
-		ctx.moveTo(this.x - this.width/2.0 - 40, this.y - this.height/2.0 - 30);
-		ctx.lineTo(this.x + 260 /* so lazy */, this.y - this.height/2.0 - 30);
+		ctx.moveTo(this.x - this.width/2.0 - 80, this.y - this.height/2.0 - 30);
+		ctx.lineTo(this.x + 240 /* so lazy */, this.y - this.height/2.0 - 30);
 		ctx.lineWidth = 3;
 		ctx.lineCapStyle = "round";
 		ctx.strokeStyle = "white";
@@ -163,9 +182,9 @@ function updateCounterValues() {
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
 	totalCounter.value = birdsFlyingCounter.value + fencePostCounter.value;
 }
-let birdsFlyingCounter = new BirdsFlyingCounter(1050, skySlotsY);
-let fencePostCounter = new Counter(1050, 800, "sitting");
-let totalCounter = new TotalCounter(1050);
+let birdsFlyingCounter = new BirdsFlyingCounter(1100, onesSkySlotsY);
+let fencePostCounter = new Counter(1100, 800, "sitting");
+let totalCounter = new TotalCounter(1100, 1000);
 
 
 class Bird {
@@ -190,7 +209,7 @@ class Bird {
 	}
 
 	update() {
-		const speed = 0.15;
+		const speed = 0.1;
 		this.x = this.x * (1.0 - speed) + this.targetX * speed;
 		this.y = this.y * (1.0 - speed) + this.targetY * speed;
 
@@ -245,7 +264,7 @@ class Post {
 
 				// TODO abstract magic numbers
 				this.bird.targetX = 100 + availableSkySpotIndex * skySpacing;
-				this.bird.targetY = skySlotsY;
+				this.bird.targetY = onesSkySlotsY;
 				this.bird.flying = true;
 				this.bird.positionIndex = availableSkySpotIndex;
 
@@ -389,13 +408,18 @@ let scrollDownArrow = new ScrollDownArrow(980);
 
 
 let currentStage;
-setCurrentStage("transition-to-tens");
+setCurrentStage("ones");
 
-function goToNextState() {
+function goToNextStage() {
 	switch (currentStage) {
 	case "ones":
 		setCurrentStage("transition-to-tens");
 		break;
+	case "transition-to-tens":
+		setCurrentStage("tens");
+		break;
+	default:
+		throw "Unknown stage";
 	}
 }
 
@@ -407,13 +431,24 @@ function setCurrentStage(newStage) {
 		}
 		scrollDownArrow.enabled = true;
 		break;
+	case "tens":
+		for (var bird of birds)	{
+			bird.flying = true;
+			bird.targetY = tensSkySlotsY;
+		}
+		for (var post of posts) {
+			post.bird = null;
+		}
+		birdsFlyingCounter.targetY = tensSkySlotsY;
+		totalCounter.targetY = 2100;
+		fencePostCounter.enabled = false;
 	}
 	currentStage = newStage;
 }
 
 
 function addBird() {
-	const bird = new Bird(-Bird.width(), skySlotsY);
+	const bird = new Bird(-Bird.width(), onesSkySlotsY);
 	bird.positionIndex = skySpots.findIndex((el) => { return el === false });
 	bird.targetX = 100 + bird.positionIndex * skySpacing;
 	birds.push(bird);
@@ -454,19 +489,19 @@ function drawScene() {
 		hill.draw();
 	}
 
+	ctx.drawImage(powerLineImage, 0, 1248);
+
 	for (var bird of birds) {
 		bird.update();
 		bird.draw();
 	}
-
-	ctx.drawImage(powerLineImage, 0, 1248);
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
 	if (numberOfBirdsInSky === 0 && currentStage === "ones") {
 		if (birds.length === 0 || Date.now() - dateWhenSkyEmptied > 500) {
 			addBird();
 			if (birds.length >= 10) {
-				goToNextState();
+				goToNextStage();
 			}
 			dateWhenSkyEmptied = null;
 		} else if (dateWhenSkyEmptied === null) {
@@ -480,14 +515,15 @@ function drawScene() {
 	updateCounterValues();
 	birdsFlyingCounter.update();
 	birdsFlyingCounter.draw();
+	fencePostCounter.update();
 	fencePostCounter.draw();
 
 	totalCounter.update();
 	totalCounter.draw();
 
 	if (currentStage === "transition-to-tens") {
-		if (fencePostCounter.y - birdsFlyingCounter.y < 100) {
-			goToNextState();
+		if (fencePostCounter.y - birdsFlyingCounter.y < 120) {
+			goToNextStage();
 		}
 	}
 }
