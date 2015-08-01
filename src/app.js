@@ -285,8 +285,6 @@ class Post {
 				}
 			}
 
-			updateCounterValues();
-
 			this.pressed = false;
 		}
 		this.lastPressed = Mouse.pressed;
@@ -380,6 +378,75 @@ class Hill {
 	}
 }
 
+class PowerLine {
+	static highlightImage() {
+		if (this._highlightImage === undefined) {
+			this._highlightImage = loadImage("power line brightener");
+		}
+		return this._highlightImage;
+	}
+
+	constructor(centerX, centerY, radius, firstDotX, firstDotY, secondDotX, secondDotY, beamX, beamY) {
+		this.centerX = centerX;
+		this.centerY = centerY;
+		this.radius = radius;
+
+		// In math, unlike in drawing, +y is up.
+		const firstDotAngle = Math.atan2(this.centerY - firstDotY, firstDotX - this.centerX);
+		const secondDotAngle = Math.atan2(this.centerY - secondDotY, secondDotX - this.centerX);
+		const dotSpacingAngle = secondDotAngle - firstDotAngle;
+
+		this.dotPoints = new Array(10);
+		for (let dotIndex = 0; dotIndex < 10; dotIndex++) {
+			// The dots aren't actually spaced in even arc lengths along X. They're on the edge of a circle but spaced in even X amounts.
+			const dotX = firstDotX + (secondDotX - firstDotX) * dotIndex;
+			const dotY = this.centerY - this.radius * Math.sin(firstDotAngle + dotIndex * dotSpacingAngle);
+			this.dotPoints[dotIndex] = [dotX, dotY];
+		}
+
+		this.beamX = beamX;
+		this.beamY = beamY;
+
+		this.debugDrawing = false;
+	}
+
+	update() {
+		if (Mouse.pressed) {
+			this.pressed = (Mouse.x > this.beamX) && (Mouse.x <= this.beamX + PowerLine.highlightImage().width) && (Mouse.y > this.beamY) && (Mouse.y <= this.beamY + PowerLine.highlightImage().height);
+		} else if (this.pressed && !Mouse.pressed) {
+			this.pressed = false;
+		}
+		this.lastPressed = Mouse.pressed;
+	}
+
+	draw() {
+		if (this.debugDrawing) {
+			ctx.save();
+			ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+			ctx.beginPath();
+			ctx.ellipse(this.centerX, this.centerY, this.radius, this.radius, 0, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.restore();
+
+			for (let dotPoint of this.dotPoints) {
+				ctx.save();
+				ctx.fillStyle = "red";
+				ctx.beginPath()
+				ctx.ellipse(dotPoint[0], dotPoint[1], 2, 2, 0, 0, 2 * Math.PI);
+				ctx.fill();
+				ctx.restore();
+			}
+		}
+
+		if (this.pressed) {
+			ctx.save();
+			ctx.globalAlpha = 0.5;
+			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
+			ctx.restore();
+		}
+	}
+}
+
 let birds = [];
 
 let posts = [];
@@ -404,7 +471,13 @@ const hills = [
 ];
 const powerLineImage = loadImage("power lines")
 
-let scrollDownArrow = new ScrollDownArrow(980);
+const powerLines = [
+	new PowerLine(755, -367, 1788.5, 298.5, 1363, 374.5, 1381, 27, 1323),
+	new PowerLine(755, -295, 1788.5, 298.5, 1435, 374.5, 1453, 27, 1393),
+	new PowerLine(755, -223, 1788.5, 298.5, 1507, 374.5, 1525, 27, 1463)
+];
+
+const scrollDownArrow = new ScrollDownArrow(980);
 
 
 let currentStage;
@@ -436,9 +509,8 @@ function setCurrentStage(newStage) {
 			bird.flying = true;
 			bird.targetY = tensSkySlotsY;
 		}
-		for (var post of posts) {
-			post.bird = null;
-		}
+
+		posts = []
 		birdsFlyingCounter.targetY = tensSkySlotsY;
 		totalCounter.targetY = 2100;
 		fencePostCounter.enabled = false;
@@ -520,6 +592,11 @@ function drawScene() {
 
 	totalCounter.update();
 	totalCounter.draw();
+
+	for (var powerLine of powerLines) {
+		powerLine.update();
+		powerLine.draw();
+	}
 
 	if (currentStage === "transition-to-tens") {
 		if (fencePostCounter.y - birdsFlyingCounter.y < 120) {
