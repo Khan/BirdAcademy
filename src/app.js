@@ -258,6 +258,44 @@ class Wave {
 	}
 }
 
+class ScrollDownArrow {
+	static image() {
+		if (this._image === undefined) {
+			this._image = loadImage("chubby arrow");
+		}
+		return this._image;
+	}
+
+	static centerX() {
+		return 850;
+	}
+
+	constructor(y) {
+		this.initialY = y;
+		this.enabled = false;
+		this.alpha = 0;
+		this.targetAlpha = 0;
+	}
+
+	update() {
+		this.x = ScrollDownArrow.centerX();
+		this.y = this.initialY + Math.sin(Date.now() / 2000) * 25;
+
+		const targetAlpha = this.enabled ? 1.0 : 0.0;
+		const alphaSpeed = 0.2;
+		this.targetAlpha = this.targetAlpha * (1.0 - alphaSpeed) + targetAlpha * alphaSpeed;
+		this.alpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.initialY - ScrollDownArrow.image().height / 2.0)) / 100.0)));
+	}
+
+	render() {
+		let image = ScrollDownArrow.image();
+
+		ctx.save();
+		ctx.globalAlpha = this.alpha;
+		ctx.drawImage(image, this.x - image.width / 2.0, this.y - image.height / 2.0);
+		ctx.restore();
+	}
+}
 
 let birds = [];
 
@@ -267,11 +305,13 @@ for (let postIndex = 0; postIndex < 9; postIndex++) {
 }
 
 let waves = [
-	new Wave(86, 1740, 0),
-	new Wave(126, 1780, 1),
-	new Wave(106, 1810, 0),
-	new Wave(86, 1840, 1)
+	new Wave(86, 1730, 0),
+	new Wave(126, 1770, 1),
+	new Wave(106, 1800, 0),
+	new Wave(86, 1830, 1)
 ];
+
+let scrollDownArrow = new ScrollDownArrow(980);
 
 
 function addBird() {
@@ -336,9 +376,15 @@ window.render = () => {
 			dateWhenSkyEmptied = Date.now();
 		} else if (Date.now() - dateWhenSkyEmptied > 500) {
 			addBird();
+			setTimeout(() => {
+				scrollDownArrow.enabled = birds.length >= 10;
+			}, 1500)
 			dateWhenSkyEmptied = null;
 		}
 	}
+
+	scrollDownArrow.update();
+	scrollDownArrow.render();
 }
 
 
