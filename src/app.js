@@ -18,7 +18,7 @@ const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const fencePostY = 840;
 
-const hills = [loadImage("hill 3"), loadImage("hill 4"), loadImage("hill 5"), loadImage("hill 6")];
+const hills = [loadImage("hill 3"), loadImage("hill 4"), loadImage("hill 5"), loadImage("hill 6"), loadImage("hill 7"), loadImage("hill 8")];
 const powerLineImage = loadImage("power lines")
 
 const skySpacing = 140;
