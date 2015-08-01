@@ -18,9 +18,6 @@ const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const fencePostY = 840;
 
-const hills = [loadImage("hill 3"), loadImage("hill 4"), loadImage("hill 5"), loadImage("hill 6"), loadImage("hill 7"), loadImage("hill 8")];
-const powerLineImage = loadImage("power lines")
-
 const skySpacing = 140;
 const skySlotsY = 400;
 
@@ -109,6 +106,32 @@ class Counter {
 	}
 }
 
+class BirdsFlyingCounter extends Counter {
+	constructor(x, y) {
+		super(x, y, "flying");
+		this.initialX = x;
+		this.initialY = y;
+		this.offsetX = 0;
+		this.offsetY = 0;
+	}
+
+	update() {
+		super.update();
+
+		this.offsetX += Math.sin(Date.now() / 3000) * 0.1;
+		this.offsetY += Math.sin(Date.now() / 1800) * 0.3;
+
+		const scrollingOffset = (currentStage === "ones") ? 0 : Math.max(0, window.scrollY - this.initialY + 150);
+
+		this.x = this.initialX + this.offsetX;
+		this.y = this.initialY + scrollingOffset + this.offsetY;
+	}
+
+	draw() {
+		super.draw();
+	}
+}
+
 class TotalCounter extends Counter {
 	constructor(x) {
 		super(x, 0, "total");
@@ -136,11 +159,11 @@ class TotalCounter extends Counter {
 
 
 function updateCounterValues() {
-	skyCounter.value = skySpots.filter((el) => { return el === true }).length;
+	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying === true }).length;
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
-	totalCounter.value = skyCounter.value + fencePostCounter.value;
+	totalCounter.value = birdsFlyingCounter.value + fencePostCounter.value;
 }
-let skyCounter = new Counter(1050, skySlotsY, "flying");
+let birdsFlyingCounter = new BirdsFlyingCounter(1050, skySlotsY);
 let fencePostCounter = new Counter(1050, 800, "sitting");
 let totalCounter = new TotalCounter(1050);
 
@@ -308,7 +331,7 @@ class ScrollDownArrow {
 
 	update() {
 		this.x = ScrollDownArrow.centerX();
-		this.y = this.initialY + Math.sin(Date.now() / 2000) * 25;
+		this.y = this.initialY + Math.sin(Date.now() / 1000) * 25;
 
 		const targetAlpha = this.enabled ? 1.0 : 0.0;
 		const alphaSpeed = 0.2;
@@ -326,6 +349,18 @@ class ScrollDownArrow {
 	}
 }
 
+class Hill {
+	constructor(x, y, imageName) {
+		this.x = x;
+		this.y = y;
+		this.image = loadImage(imageName);
+	}
+
+	draw() {
+		ctx.drawImage(this.image, this.x, this.y);
+	}
+}
+
 let birds = [];
 
 let posts = [];
@@ -340,18 +375,51 @@ let waves = [
 	new Wave(86, 1830, 1)
 ];
 
+const hills = [
+	new Hill(0, 983, "hill 3"),
+	new Hill(0, 1492, "hill 4"),
+	new Hill(260, 1731, "hill 5"),
+	new Hill(0, 1882, "hill 6"),
+	new Hill(0, 2755, "hill 7"),
+	new Hill(244, 2825, "hill 8")
+];
+const powerLineImage = loadImage("power lines")
+
 let scrollDownArrow = new ScrollDownArrow(980);
+
+
+let currentStage;
+setCurrentStage("transition-to-tens");
+
+function goToNextState() {
+	switch (currentStage) {
+	case "ones":
+		setCurrentStage("transition-to-tens");
+		break;
+	}
+}
+
+function setCurrentStage(newStage) {
+	switch (newStage) {
+	case "transition-to-tens":
+		for (var birdIndex = birds.length; birdIndex < 10; birdIndex++) {
+			addBird();
+		}
+		scrollDownArrow.enabled = true;
+		break;
+	}
+	currentStage = newStage;
+}
 
 
 function addBird() {
 	const bird = new Bird(-Bird.width(), skySlotsY);
-	bird.targetX = 100;
-	bird.positionIndex = 0;
+	bird.positionIndex = skySpots.findIndex((el) => { return el === false });
+	bird.targetX = 100 + bird.positionIndex * skySpacing;
 	birds.push(bird);
-	skySpots[0] = true;
+	skySpots[bird.positionIndex] = true;
 }
 
-addBird();
 
 let dateWhenSkyEmptied = null;
 function drawScene() {
@@ -370,20 +438,20 @@ function drawScene() {
 	ctx.drawImage(mamaCloud, mamaCloud.currentX, 200);
 	ctx.drawImage(weeCloud, weeCloud.currentX, 300);
 
-	ctx.drawImage(fencePostsImage, 0, 0);
+	ctx.drawImage(fencePostsImage, 0, 796);
 
 	for (var post of posts) {
 		post.update();
 		post.draw();
 	}
 
-	ctx.drawImage(hills[0], 0, 0);
+	hills[0].draw();
 	for (var wave of waves) {
 		wave.update();
 		wave.draw();
 	}
 	for (var hill of hills.slice(1)) {
-		ctx.drawImage(hill, 0, 0);
+		hill.draw();
 	}
 
 	for (var bird of birds) {
@@ -394,15 +462,15 @@ function drawScene() {
 	ctx.drawImage(powerLineImage, 0, 1248);
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
-	if (numberOfBirdsInSky === 0) {
-		if (dateWhenSkyEmptied === null) {
-			dateWhenSkyEmptied = Date.now();
-		} else if (Date.now() - dateWhenSkyEmptied > 500) {
+	if (numberOfBirdsInSky === 0 && currentStage === "ones") {
+		if (birds.length === 0 || Date.now() - dateWhenSkyEmptied > 500) {
 			addBird();
-			setTimeout(() => {
-				scrollDownArrow.enabled = birds.length >= 10;
-			}, 1500)
+			if (birds.length >= 10) {
+				goToNextState();
+			}
 			dateWhenSkyEmptied = null;
+		} else if (dateWhenSkyEmptied === null) {
+			dateWhenSkyEmptied = Date.now();
 		}
 	}
 
@@ -410,13 +478,18 @@ function drawScene() {
 	scrollDownArrow.draw();
 
 	updateCounterValues();
-	skyCounter.x += Math.sin(Date.now() / 3000) * 0.1;
-	skyCounter.y += Math.sin(Date.now() / 1800) * 0.3;
-	skyCounter.draw();
+	birdsFlyingCounter.update();
+	birdsFlyingCounter.draw();
 	fencePostCounter.draw();
 
 	totalCounter.update();
 	totalCounter.draw();
+
+	if (currentStage === "transition-to-tens") {
+		if (fencePostCounter.y - birdsFlyingCounter.y < 100) {
+			goToNextState();
+		}
+	}
 }
 
 
