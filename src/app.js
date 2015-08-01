@@ -18,9 +18,10 @@ const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const fencePostY = 840;
 
-const skySpacing = 140;
+const skySpacing = 120;
 const onesSkySlotsY = 400;
 const tensSkySlotsY = 1750;
+let skySlotsY = onesSkySlotsY;
 
 let birdImages = [];
 for (let birdImageIndex = 0; birdImageIndex < 10; birdImageIndex++) {
@@ -182,7 +183,7 @@ function updateCounterValues() {
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
 	totalCounter.value = birdsFlyingCounter.value + fencePostCounter.value;
 }
-let birdsFlyingCounter = new BirdsFlyingCounter(1100, onesSkySlotsY);
+let birdsFlyingCounter = new BirdsFlyingCounter(1100, skySlotsY);
 let fencePostCounter = new Counter(1100, 800, "sitting");
 let totalCounter = new TotalCounter(1100, 1000);
 
@@ -198,6 +199,7 @@ class Bird {
 		this.frequencyX = 800 + Math.random() % 200;
 		this.frequencyY = 600 + Math.random() % 150;
 		this.animationIndex = Math.floor(Math.random() % birdImages.length);
+		this.positionIndex = null;
 	}
 
 	static width() {
@@ -230,6 +232,25 @@ class Bird {
 		ctx.drawImage(image, this.x - Bird.width() / 2.0, this.y - Bird.height() / 2.0);
 		this.animationIndex = (this.animationIndex + 1) % birdImages.length
 	}
+
+	landAt(x, y) {
+		this.targetX = x;
+		this.targetY = y;
+		this.flying = false;
+		skySpots[this.positionIndex] = false;
+		this.positionIndex = null;
+	}
+
+	flyAway() {
+		let skySpotIndex = (this.positionIndex !== null) ? this.positionIndex : skySpots.findIndex((el) => { return el === false });
+
+		this.targetX = 100 + (skySpotIndex * skySpacing) % (canvas.width - 200);
+		this.targetY = skySlotsY + skySpacing * Math.floor((skySpotIndex * skySpacing) / (canvas.width - 200));
+		this.flying = true;
+		this.positionIndex = skySpotIndex;
+
+		skySpots[skySpotIndex] = true;
+	}
 }
 
 class Post {
@@ -260,26 +281,14 @@ class Post {
 			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + Post.width()) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + Post.height());
 		} else if (this.pressed && !Mouse.pressed) {
 			if (this.bird !== null) {
-				var availableSkySpotIndex = skySpots.findIndex((el) => { return el === false });
-
-				// TODO abstract magic numbers
-				this.bird.targetX = 100 + availableSkySpotIndex * skySpacing;
-				this.bird.targetY = onesSkySlotsY;
-				this.bird.flying = true;
-				this.bird.positionIndex = availableSkySpotIndex;
-
-				skySpots[availableSkySpotIndex] = true;
+				bird.flyAway();
 				this.bird = null;
 			} else {
 				// Find a flying bird; make it fly here.
 				for (var bird of birds) {
 					if (bird.flying) {
 						this.bird = bird;
-
-						bird.targetX = this.originX + Post.width() / 2.0;
-						bird.targetY = this.originY - 15;
-						skySpots[bird.positionIndex] = false;
-						bird.flying = false;
+						bird.landAt(this.originX + Post.width() / 2.0, this.originY - 15)
 						break;
 					}
 				}
@@ -407,6 +416,8 @@ class PowerLine {
 		this.beamX = beamX;
 		this.beamY = beamY;
 
+		this.birds = [];
+
 		this.debugDrawing = false;
 	}
 
@@ -414,6 +425,22 @@ class PowerLine {
 		if (Mouse.pressed) {
 			this.pressed = (Mouse.x > this.beamX) && (Mouse.x <= this.beamX + PowerLine.highlightImage().width) && (Mouse.y > this.beamY) && (Mouse.y <= this.beamY + PowerLine.highlightImage().height);
 		} else if (this.pressed && !Mouse.pressed) {
+			if (this.birds.length === 0) {
+				for (var birdIndex = 0; birdIndex < birds.length; birdIndex++) {
+					const bird = birds[birdIndex];
+					if (bird.flying) {
+						const dotPoint = this.dotPoints[this.birds.length]
+						bird.landAt(dotPoint[0], dotPoint[1] - 15)
+						this.birds.push(bird);
+					}
+				}
+ 			} else {
+ 				for (var bird of birds) {
+ 					bird.flyAway();
+ 				}
+ 				this.birds = [];
+ 			}
+
 			this.pressed = false;
 		}
 		this.lastPressed = Mouse.pressed;
@@ -469,19 +496,17 @@ const hills = [
 	new Hill(0, 2755, "hill 7"),
 	new Hill(244, 2825, "hill 8")
 ];
-const powerLineImage = loadImage("power lines")
 
-const powerLines = [
-	new PowerLine(755, -367, 1788.5, 298.5, 1363, 374.5, 1381, 27, 1323),
-	new PowerLine(755, -295, 1788.5, 298.5, 1435, 374.5, 1453, 27, 1393),
-	new PowerLine(755, -223, 1788.5, 298.5, 1507, 374.5, 1525, 27, 1463)
-];
+const powerLineImage = loadImage("power lines")
+let powerLines = [];
 
 const scrollDownArrow = new ScrollDownArrow(980);
 
 
 let currentStage;
 setCurrentStage("ones");
+setCurrentStage("transition-to-tens");
+// setCurrentStage("tens");
 
 function goToNextStage() {
 	switch (currentStage) {
@@ -502,29 +527,33 @@ function setCurrentStage(newStage) {
 		for (var birdIndex = birds.length; birdIndex < 10; birdIndex++) {
 			addBird();
 		}
-		scrollDownArrow.enabled = true;
+		setTimeout(() => { scrollDownArrow.enabled = true; }, 1500);
 		break;
 	case "tens":
+		skySlotsY = tensSkySlotsY;
 		for (var bird of birds)	{
-			bird.flying = true;
-			bird.targetY = tensSkySlotsY;
+			bird.flyAway();
 		}
 
 		posts = []
 		birdsFlyingCounter.targetY = tensSkySlotsY;
 		totalCounter.targetY = 2100;
 		fencePostCounter.enabled = false;
+
+		powerLines = [
+			new PowerLine(755, -367, 1788.5, 298.5, 1363, 374.5, 1381, 27, 1323),
+			new PowerLine(755, -295, 1788.5, 298.5, 1435, 374.5, 1453, 27, 1393),
+			new PowerLine(755, -223, 1788.5, 298.5, 1507, 374.5, 1525, 27, 1463)
+		];
 	}
 	currentStage = newStage;
 }
 
 
 function addBird() {
-	const bird = new Bird(-Bird.width(), onesSkySlotsY);
-	bird.positionIndex = skySpots.findIndex((el) => { return el === false });
-	bird.targetX = 100 + bird.positionIndex * skySpacing;
+	const bird = new Bird(-Bird.width(), skySlotsY);
+	bird.flyAway();
 	birds.push(bird);
-	skySpots[bird.positionIndex] = true;
 }
 
 
