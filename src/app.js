@@ -301,6 +301,8 @@ class Post {
 						break;
 					}
 				}
+
+				this.prompt = false;
 			}
 
 			this.pressed = false;
@@ -309,9 +311,16 @@ class Post {
 	}
 
 	draw() {
+		let highlightAlpha = 0.0;
 		if (this.pressed) {
+			highlightAlpha = 1.0;
+		} else if (this.prompt) {
+			highlightAlpha = (Math.sin(Date.now() / 190) + 1.0) / 2.0;
+		}
+
+		if (highlightAlpha > 0.0) {
 			ctx.save();
-			ctx.globalAlpha = 0.5;
+			ctx.globalAlpha = 0.5 * highlightAlpha;
 			ctx.drawImage(Post.highlightImage(), this.originX, this.originY);
 			ctx.restore();
 		}
@@ -473,6 +482,8 @@ class PowerLine {
 		 				this.birds = [];
 					}, 1600);
 				}
+
+				this.prompt = false;
  			} else {
  				for (var bird of this.birds) {
  					bird.flyAway();
@@ -503,9 +514,16 @@ class PowerLine {
 			}
 		}
 
+		let highlightAlpha = 0.0;
 		if (this.pressed || this.debugDrawing) {
+			highlightAlpha = 1.0;
+		} else if (this.prompt) {
+			highlightAlpha = (Math.sin(Date.now() / 190) + 1.0) / 2.0;
+		}
+
+		if (highlightAlpha > 0.0) {
 			ctx.save();
-			ctx.globalAlpha = 0.5;
+			ctx.globalAlpha = 0.5 * highlightAlpha;
 			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
 			ctx.restore();
 		}
@@ -539,6 +557,7 @@ let onesPosts = [];
 for (let postIndex = 0; postIndex < 9; postIndex++) {
 	onesPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), onesFencePostY))
 }
+onesPosts[0].prompt = true;
 let combinedPosts = [];
 
 let waves = [
@@ -606,6 +625,7 @@ function setCurrentStage(newStage) {
 			new PowerLine(755, -295, 1788.5, 298.5, 1435, 374.5, 1453, 27, 1393),
 			new PowerLine(755, -223, 1788.5, 298.5, 1507, 374.5, 1525, 27, 1463)
 		];
+		powerLines[0].prompt = true;
 		break;
 	case "transition-to-combined":
 		for (var birdIndex = birds.length; birdIndex < 35; birdIndex++) {
