@@ -403,7 +403,16 @@ class PowerLine {
 		return this._highlightImage;
 	}
 
+	static missingBirdImage() {
+		if (this._missingBirdImage === undefined) {
+			this._missingBirdImage = loadImage("bird outline prompt");
+		}
+		return this._missingBirdImage;
+	}
+
 	constructor(centerX, centerY, radius, firstDotX, firstDotY, secondDotX, secondDotY, beamX, beamY) {
+		PowerLine.missingBirdImage(); // preheat
+
 		this.centerX = centerX;
 		this.centerY = centerY;
 		this.radius = radius;
@@ -443,13 +452,23 @@ class PowerLine {
 			this.pressed = (Mouse.x > this.beamX) && (Mouse.x <= this.beamX + PowerLine.highlightImage().width) && (Mouse.y > this.beamY) && (Mouse.y <= this.beamY + PowerLine.highlightImage().height);
 		} else if (this.pressed && !Mouse.pressed) {
 			if (this.birds.length === 0) {
-				for (var birdIndex = 0; birdIndex < birds.length, this.birds.length < 10; birdIndex++) {
+				for (var birdIndex = 0; birdIndex < birds.length && this.birds.length < 10; birdIndex++) {
 					const bird = birds[birdIndex];
 					if (bird.flying && bird.active) {
 						const dotPoint = this.dotPoints[this.birds.length]
 						bird.landAt(dotPoint[0], dotPoint[1] - 15)
 						this.birds.push(bird);
 					}
+				}
+				this.landingTime = Date.now();
+
+				if (this.birds.length < 10) {
+					setTimeout(() => {
+		 				for (var bird of this.birds) {
+		 					bird.flyAway();
+		 				}
+		 				this.birds = [];
+					}, 1600);
 				}
  			} else {
  				for (var bird of this.birds) {
@@ -485,6 +504,16 @@ class PowerLine {
 			ctx.save();
 			ctx.globalAlpha = 0.5;
 			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
+			ctx.restore();
+		}
+
+		if (this.birds.length > 0 && this.birds.length < 10) {
+			ctx.save();
+			ctx.globalAlpha = (Math.sin((Date.now() - this.landingTime) / 150) + 1.0) / 2.0;
+			const promptImage = PowerLine.missingBirdImage();
+			for (var birdIndex = this.birds.length; birdIndex < 10; birdIndex++) {
+				ctx.drawImage(promptImage, this.dotPoints[birdIndex][0] - promptImage.width / 2.0, this.dotPoints[birdIndex][1] - 18 - promptImage.height / 2.0);
+			}
 			ctx.restore();
 		}
 
