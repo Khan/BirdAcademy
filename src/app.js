@@ -21,6 +21,7 @@ const fencePostY = 840;
 const skySpacing = 120;
 const onesSkySlotsY = 400;
 const tensSkySlotsY = 1750;
+const combinedSkySlotsY = 2600;
 let skySlotsY = onesSkySlotsY;
 
 let birdImages = [];
@@ -422,9 +423,16 @@ class PowerLine {
 		this.debugDrawing = false;
 
 		this.counter = new Counter(beamY + 40, "sitting");
+		this.enabled = true;
 	}
 
 	update() {
+		this.counter.value = this.birds.length;
+		this.counter.update();
+		if (!this.enabled) {
+			return;
+		}
+
 		if (Mouse.pressed) {
 			this.pressed = (Mouse.x > this.beamX) && (Mouse.x <= this.beamX + PowerLine.highlightImage().width) && (Mouse.y > this.beamY) && (Mouse.y <= this.beamY + PowerLine.highlightImage().height);
 		} else if (this.pressed && !Mouse.pressed) {
@@ -446,9 +454,6 @@ class PowerLine {
 
 			this.pressed = false;
 		}
-
-		this.counter.value = this.birds.length;
-		this.counter.update();
 	}
 
 	draw() {
@@ -478,6 +483,15 @@ class PowerLine {
 		}
 
 		this.counter.draw();
+	}
+
+	set enabled(newValue) {
+		this._enabled = newValue;
+		this.counter.enabled = newValue
+	}
+
+	get enabled() {
+		return this._enabled;
 	}
 }
 
@@ -514,20 +528,18 @@ const scrollDownArrow = new ScrollDownArrow(980);
 
 let currentStage;
 setCurrentStage("ones");
-setCurrentStage("transition-to-tens");
-setCurrentStage("tens");
+// setCurrentStage("transition-to-tens");
+// setCurrentStage("tens");
+// setCurrentStage("transition-to-combined");
 
 function goToNextStage() {
-	switch (currentStage) {
-	case "ones":
-		setCurrentStage("transition-to-tens");
-		break;
-	case "transition-to-tens":
-		setCurrentStage("tens");
-		break;
-	default:
-		throw "Unknown stage";
+	let transitions = {
+		"ones": "transition-to-tens",
+		"transition-to-tens": "tens",
+		"tens": "transition-to-combined",
+		"transition-to-combined": "combined"
 	}
+	setCurrentStage(transitions[currentStage]);
 }
 
 function setCurrentStage(newStage) {
@@ -554,6 +566,27 @@ function setCurrentStage(newStage) {
 			new PowerLine(755, -295, 1788.5, 298.5, 1435, 374.5, 1453, 27, 1393),
 			new PowerLine(755, -223, 1788.5, 298.5, 1507, 374.5, 1525, 27, 1463)
 		];
+		break;
+	case "transition-to-combined":
+		for (var birdIndex = birds.length; birdIndex < 35; birdIndex++) {
+			addBird();
+		}
+		setTimeout(() => { goToNextStage(); }, 1000);
+		break;
+	case "combined":
+		for (var powerLine of powerLines) {
+			powerLine.enabled = false;
+		}
+
+		skySlotsY = combinedSkySlotsY;
+		birdsFlyingCounter.targetY = skySlotsY;
+		for (var bird of birds)	{
+			bird.flyAway();
+		}
+
+		totalCounter.targetY = 3100;
+
+		break;
 	}
 	currentStage = newStage;
 }
