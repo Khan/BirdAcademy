@@ -16,12 +16,13 @@ weeCloud.currentX = 400;
 const fencePostsImage = loadImage("fence");
 const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
-const fencePostY = 840;
+const onesFencePostY = 840;
+const combinedFencePostY = 2683;
 
 const skySpacing = 120;
 const onesSkySlotsY = 400;
 const tensSkySlotsY = 1750;
-const combinedSkySlotsY = 2600;
+const combinedSkySlotsY = 2850;
 let skySlotsY = onesSkySlotsY;
 
 let birdImages = [];
@@ -182,7 +183,7 @@ class TotalCounter extends Counter {
 
 function updateCounterValues() {
 	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying === true }).length;
-	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
+	fencePostCounter.value = onesPosts.filter((post) => { return post.bird !== null }).length;
 	totalCounter.value = birds.length;
 }
 let birdsFlyingCounter = new BirdsFlyingCounter(skySlotsY);
@@ -475,7 +476,7 @@ class PowerLine {
 			}
 		}
 
-		if (this.pressed) {
+		if (this.pressed || this.debugDrawing) {
 			ctx.save();
 			ctx.globalAlpha = 0.5;
 			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
@@ -497,10 +498,11 @@ class PowerLine {
 
 let birds = [];
 
-let posts = [];
+let onesPosts = [];
 for (let postIndex = 0; postIndex < 9; postIndex++) {
-	posts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), fencePostY))
+	onesPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), onesFencePostY))
 }
+let combinedPosts = [];
 
 let waves = [
 	new Wave(86, 1730, 0),
@@ -528,9 +530,10 @@ const scrollDownArrow = new ScrollDownArrow(980);
 
 let currentStage;
 setCurrentStage("ones");
-// setCurrentStage("transition-to-tens");
-// setCurrentStage("tens");
-// setCurrentStage("transition-to-combined");
+setCurrentStage("transition-to-tens");
+setCurrentStage("tens");
+setCurrentStage("transition-to-combined");
+setCurrentStage("combined");
 
 function goToNextStage() {
 	let transitions = {
@@ -556,7 +559,7 @@ function setCurrentStage(newStage) {
 			bird.flyAway();
 		}
 
-		posts = []
+		onesPosts = []
 		birdsFlyingCounter.targetY = tensSkySlotsY;
 		totalCounter.targetY = 2100;
 		fencePostCounter.enabled = false;
@@ -576,6 +579,15 @@ function setCurrentStage(newStage) {
 	case "combined":
 		for (var powerLine of powerLines) {
 			powerLine.enabled = false;
+		}
+		powerLines = powerLines.concat([
+			new PowerLine(726, 272, 1998.5, 221, 2197, 297, 2219, -43, 2170),
+			new PowerLine(726, 344, 1998.5, 221, 2270, 297, 2292, -43, 2240),
+			new PowerLine(726, 412.5, 1998.5, 221, 2344, 297, 2374, -43, 2310),
+		]);
+
+		for (let postIndex = 0; postIndex < 9; postIndex++) {
+			combinedPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), combinedFencePostY))
 		}
 
 		skySlotsY = combinedSkySlotsY;
@@ -618,7 +630,7 @@ function drawScene() {
 
 	ctx.drawImage(fencePostsImage, 0, 796);
 
-	for (var post of posts) {
+	for (var post of onesPosts) {
 		post.update();
 		post.draw();
 	}
@@ -635,6 +647,10 @@ function drawScene() {
 	ctx.drawImage(houseImage, 925, 2200);
 	ctx.drawImage(powerLine2Image, 0, 2095);
 	ctx.drawImage(fencePostsImage, 0, 2640);
+	for (var post of combinedPosts) {
+		post.update();
+		post.draw();
+	}
 	hills[4].draw();
 	hills[5].draw();
 
