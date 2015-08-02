@@ -51,9 +51,13 @@ class Counter {
 		this.opacity = 1.0;
 		this.actionString = actionString;
 		this.enabled = true;
+		this.scale = 1.0;
 	}
 
 	set value(newValue) {
+		if (this._value !== undefined && this._value !== newValue) {
+			this.scale = 1.5;
+		}
 		this._value = newValue;
 
 		ctx.save();
@@ -86,6 +90,8 @@ class Counter {
 
 		this.x = this.currentX;
 		this.y = this.currentY;
+
+		this.scale = this.scale * 0.85 + 1.0 * 0.15;
 	}
 
 	draw() {
@@ -101,6 +107,9 @@ class Counter {
 		// Make a round rect...
 		ctx.save();
 		ctx.beginPath();
+		ctx.translate(this.x, this.y);
+		ctx.scale(this.scale, this.scale);
+		ctx.translate(-this.x, -this.y);
 		ctx.moveTo(originX + cornerRadius, originY);
 		ctx.lineTo(originX + this.width - cornerRadius, originY);
 		ctx.arcTo(originX + this.width, originY, originX + this.width, originY + cornerRadius, cornerRadius);
@@ -110,6 +119,8 @@ class Counter {
 		ctx.arcTo(originX, originY + this.height, originX, originY + this.height - cornerRadius, cornerRadius);
 		ctx.lineTo(originX, originY + cornerRadius);
 		ctx.arcTo(originX, originY, originX + cornerRadius, originY, cornerRadius);
+
+		ctx.save();
 		ctx.globalCompositeOperation = "multiply";
 		ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
 		ctx.shadowBlur = 30;
@@ -117,17 +128,15 @@ class Counter {
 		ctx.fill();
 		ctx.restore();
 
-		ctx.save();
 		ctx.fillStyle = "white";
-
 		ctx.font = Counter.numberFont();
 		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
+		ctx.restore();
 
+		ctx.save();
 		ctx.font = "200 44px 'Proxima Nova'";
 		const birdString = this.value === 1 ? "bird" : "birds"
 		ctx.fillText(this.descriptionString, originX + this.width + 10, originY + this.height - 14);
-		ctx.restore();
-
 		ctx.restore();
 	}
 }
