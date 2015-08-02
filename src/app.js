@@ -38,10 +38,11 @@ for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
 
 
 class Counter {
-	constructor(x, y, actionString) {
-		this.currentX = x;
+	constructor(y, actionString) {
+		const counterX = 1120;
+		this.currentX = counterX;
 		this.currentY = y;
-		this.targetX = x;
+		this.targetX = counterX;
 		this.targetY = y;
 		this.height = 70;
 		this.opacity = 1.0;
@@ -129,8 +130,8 @@ class Counter {
 }
 
 class BirdsFlyingCounter extends Counter {
-	constructor(x, y) {
-		super(x, y, "flying");
+	constructor(y) {
+		super(y, "flying");
 		this.floatOffsetX = 0;
 		this.floatOffsetY = 0;
 	}
@@ -153,8 +154,8 @@ class BirdsFlyingCounter extends Counter {
 }
 
 class TotalCounter extends Counter {
-	constructor(x, y) {
-		super(x, y, "total");
+	constructor(y) {
+		super(y, "total");
 	}
 
 	update() {
@@ -168,7 +169,7 @@ class TotalCounter extends Counter {
 		ctx.save();
 		ctx.beginPath();
 		ctx.moveTo(this.x - this.width/2.0 - 80, this.y - this.height/2.0 - 30);
-		ctx.lineTo(this.x + 240 /* so lazy */, this.y - this.height/2.0 - 30);
+		ctx.lineTo(this.x + 220 /* so lazy */, this.y - this.height/2.0 - 30);
 		ctx.lineWidth = 3;
 		ctx.lineCapStyle = "round";
 		ctx.strokeStyle = "white";
@@ -181,11 +182,11 @@ class TotalCounter extends Counter {
 function updateCounterValues() {
 	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying === true }).length;
 	fencePostCounter.value = posts.filter((post) => { return post.bird !== null }).length;
-	totalCounter.value = birdsFlyingCounter.value + fencePostCounter.value;
+	totalCounter.value = birds.length;
 }
-let birdsFlyingCounter = new BirdsFlyingCounter(1100, skySlotsY);
-let fencePostCounter = new Counter(1100, 800, "sitting");
-let totalCounter = new TotalCounter(1100, 1000);
+let birdsFlyingCounter = new BirdsFlyingCounter(skySlotsY);
+let fencePostCounter = new Counter(800, "sitting");
+let totalCounter = new TotalCounter(1000);
 
 
 class Bird {
@@ -281,7 +282,7 @@ class Post {
 			this.pressed = (Mouse.x > this.originX) && (Mouse.x <= this.originX + Post.width()) && (Mouse.y > this.originY) && (Mouse.y <= this.originY + Post.height());
 		} else if (this.pressed && !Mouse.pressed) {
 			if (this.bird !== null) {
-				bird.flyAway();
+				this.bird.flyAway();
 				this.bird = null;
 			} else {
 				// Find a flying bird; make it fly here.
@@ -419,6 +420,8 @@ class PowerLine {
 		this.birds = [];
 
 		this.debugDrawing = false;
+
+		this.counter = new Counter(beamY + 40, "sitting");
 	}
 
 	update() {
@@ -444,6 +447,9 @@ class PowerLine {
 			this.pressed = false;
 		}
 		this.lastPressed = Mouse.pressed;
+
+		this.counter.value = this.birds.length;
+		this.counter.update();
 	}
 
 	draw() {
@@ -471,6 +477,8 @@ class PowerLine {
 			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
 			ctx.restore();
 		}
+
+		this.counter.draw();
 	}
 }
 
@@ -506,7 +514,7 @@ const scrollDownArrow = new ScrollDownArrow(980);
 let currentStage;
 setCurrentStage("ones");
 setCurrentStage("transition-to-tens");
-// setCurrentStage("tens");
+setCurrentStage("tens");
 
 function goToNextStage() {
 	switch (currentStage) {
@@ -527,7 +535,7 @@ function setCurrentStage(newStage) {
 		for (var birdIndex = birds.length; birdIndex < 10; birdIndex++) {
 			addBird();
 		}
-		setTimeout(() => { scrollDownArrow.enabled = true; }, 1500);
+		setTimeout(() => { scrollDownArrow.enabled = true; }, 2500);
 		break;
 	case "tens":
 		skySlotsY = tensSkySlotsY;
