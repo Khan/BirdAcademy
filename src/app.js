@@ -503,8 +503,10 @@ const hills = [
 	new Hill(0, 2755, "hill 7"),
 	new Hill(244, 2825, "hill 8")
 ];
+const houseImage = loadImage("haus");
 
-const powerLineImage = loadImage("power lines")
+const powerLineImage = loadImage("power lines");
+const powerLine2Image = loadImage("power lines 2");
 let powerLines = [];
 
 const scrollDownArrow = new ScrollDownArrow(980);
@@ -593,11 +595,16 @@ function drawScene() {
 		wave.update();
 		wave.draw();
 	}
-	for (var hill of hills.slice(1)) {
-		hill.draw();
-	}
-
+	hills[1].draw();
+	hills[2].draw();
 	ctx.drawImage(powerLineImage, 0, 1248);
+	hills[3].draw();
+	ctx.drawImage(houseImage, 925, 2200);
+	ctx.drawImage(powerLine2Image, 0, 2095);
+	ctx.drawImage(fencePostsImage, 0, 2640);
+	hills[4].draw();
+	hills[5].draw();
+
 
 	for (var bird of birds) {
 		bird.update();
@@ -606,7 +613,7 @@ function drawScene() {
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
 	if (numberOfBirdsInSky === 0) {
-		if (birds.length === 0 || (Date.now() - dateWhenSkyEmptied > 1500)) {
+		if (birds.length === 0 || (dateWhenSkyEmptied !== null && (Date.now() - dateWhenSkyEmptied) > 750)) {
 			if (currentStage === "ones") {
 				addBird();
 				if (birds.length >= 10) {
