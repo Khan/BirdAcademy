@@ -352,11 +352,11 @@ class ScrollDownArrow {
 	}
 
 	static centerX() {
-		return 850;
+		return canvas.width / 2.0;
 	}
 
 	constructor(y) {
-		this.initialY = y;
+		this.anchorY = y;
 		this.enabled = false;
 		this.alpha = 0;
 		this.targetAlpha = 0;
@@ -364,12 +364,12 @@ class ScrollDownArrow {
 
 	update() {
 		this.x = ScrollDownArrow.centerX();
-		this.y = this.initialY + Math.sin(Date.now() / 1000) * 25;
+		this.y = this.anchorY + Math.sin(Date.now() / 1000) * 25;
 
 		const targetAlpha = this.enabled ? 1.0 : 0.0;
 		const alphaSpeed = 0.2;
 		this.targetAlpha = this.targetAlpha * (1.0 - alphaSpeed) + targetAlpha * alphaSpeed;
-		this.alpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.initialY - ScrollDownArrow.image().height / 2.0)) / 100.0)));
+		this.alpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.anchorY - ScrollDownArrow.image().height)) / 100.0)));
 	}
 
 	draw() {
@@ -578,7 +578,7 @@ function setCurrentStage(newStage) {
 		for (var birdIndex = birds.length; birdIndex < 35; birdIndex++) {
 			addBird();
 		}
-		setTimeout(() => { goToNextStage(); }, 1000);
+		scrollDownArrow.anchorY = 1950;
 		break;
 	case "combined":
 		for (var powerLine of powerLines) {
@@ -710,6 +710,10 @@ function drawScene() {
 
 	if (currentStage === "transition-to-tens") {
 		if (onesFencePostCounter.y - birdsFlyingCounter.y < 120) {
+			goToNextStage();
+		}
+	} else if (currentStage == "transition-to-combined") {
+		if (window.scrollY > 1460) {
 			goToNextStage();
 		}
 	}
