@@ -32,7 +32,7 @@ let birdSittingImage = loadImage("peep sit");
 
 
 let skySpots = [];
-for (let skySpotsIndex = 0; skySpotsIndex < 20; skySpotsIndex++) {
+for (let skySpotsIndex = 0; skySpotsIndex < 50; skySpotsIndex++) {
 	skySpots.push(false);
 }
 
@@ -429,7 +429,7 @@ class PowerLine {
 			this.pressed = (Mouse.x > this.beamX) && (Mouse.x <= this.beamX + PowerLine.highlightImage().width) && (Mouse.y > this.beamY) && (Mouse.y <= this.beamY + PowerLine.highlightImage().height);
 		} else if (this.pressed && !Mouse.pressed) {
 			if (this.birds.length === 0) {
-				for (var birdIndex = 0; birdIndex < birds.length; birdIndex++) {
+				for (var birdIndex = 0; birdIndex < birds.length, this.birds.length < 10; birdIndex++) {
 					const bird = birds[birdIndex];
 					if (bird.flying) {
 						const dotPoint = this.dotPoints[this.birds.length]
@@ -438,7 +438,7 @@ class PowerLine {
 					}
 				}
  			} else {
- 				for (var bird of birds) {
+ 				for (var bird of this.birds) {
  					bird.flyAway();
  				}
  				this.birds = [];
@@ -446,7 +446,6 @@ class PowerLine {
 
 			this.pressed = false;
 		}
-		this.lastPressed = Mouse.pressed;
 
 		this.counter.value = this.birds.length;
 		this.counter.update();
@@ -606,11 +605,22 @@ function drawScene() {
 	}
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
-	if (numberOfBirdsInSky === 0 && currentStage === "ones") {
-		if (birds.length === 0 || Date.now() - dateWhenSkyEmptied > 500) {
-			addBird();
-			if (birds.length >= 10) {
-				goToNextStage();
+	if (numberOfBirdsInSky === 0) {
+		if (birds.length === 0 || (Date.now() - dateWhenSkyEmptied > 1500)) {
+			if (currentStage === "ones") {
+				addBird();
+				if (birds.length >= 10) {
+					goToNextStage();
+				}
+			} else if (currentStage === "tens") {
+				if (birds.length < 30) {
+					for (var i = 0; i < 10; i++) { addBird(); }
+				} else {
+					for (var i = 0; i < 5; i++) { addBird(); }
+				}
+				if (birds.length > 30) {
+					goToNextStage();
+				}
 			}
 			dateWhenSkyEmptied = null;
 		} else if (dateWhenSkyEmptied === null) {
