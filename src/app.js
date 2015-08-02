@@ -204,9 +204,23 @@ let combinedFencePostCounter = new Counter(2670, "sitting");
 combinedFencePostCounter.enabled = false;
 let totalCounter = new TotalCounter(1000);
 
-
+let numberOfBirdsSinging = 0;
 class Bird {
+	static audioPaths() {
+		return [
+			"sound/1.mp3",
+			"sound/2.mp3",
+			"sound/3.mp3",
+			"sound/5.mp3",
+			"sound/6.mp3",
+			"sound/8.mp3"
+		]
+	}
+
 	constructor(x, y) {
+		this.audio = new Audio(Bird.audioPaths()[Math.floor(Math.random() * Bird.audioPaths().length)]);
+		this.audio.loop = true;
+
 		this.x = x;
 		this.y = y;
 		this.targetX = this.x;
@@ -218,7 +232,7 @@ class Bird {
 		this.phase = Math.random() % (2 * Math.PI);
 		this.frequencyX = 800 + Math.random() % 200;
 		this.frequencyY = 600 + Math.random() % 150;
-		this.animationIndex = Math.floor(Math.random() % birdImages.length);
+		this.animationIndex = Math.floor(Math.random() * birdImages.length);
 		this.positionIndex = null;
 	}
 
@@ -240,12 +254,29 @@ class Bird {
 		this.y = this.y * (1.0 - speed) + targetY * speed;
 
 		const bobbingAmplitude = Math.PI / (this.flying ? 7.0 : 25.0);
-		this.angle = -Math.sin(Date.now() / this.frequencyX + this.phase) * bobbingAmplitude;;
+		this.angle = -Math.sin(Date.now() / this.frequencyX + this.phase) * bobbingAmplitude;
+
+		this.singing = !this.flying && Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1 && this.active;
+
+		if (this.active) {
+			if (this.singing && this.audio.paused && numberOfBirdsSinging < 20 && !suppressNextBirdSequence) {
+				this.audio.play();
+				numberOfBirdsSinging++;
+			} else if (!this.singing && !this.audio.paused) {
+				numberOfBirdsSinging--;
+				this.audio.pause();
+				this.audio.currentTime = 0.0;
+			}
+		} else if (this.audio !== undefined) {
+			numberOfBirdsSinging--;
+			this.audio.pause();
+			this.audio = undefined;
+		}
 	}
 
 	draw() {
 		let image;
-		if (!this.flying && Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1) {
+		if (this.singing) {
 			image = birdSittingImage;
 		} else {
 			image = birdImages[this.animationIndex];
