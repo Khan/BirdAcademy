@@ -202,6 +202,8 @@ class Bird {
 		this.y = y;
 		this.targetX = this.x;
 		this.targetY = this.y;
+		this.floatOffsetX = 0;
+		this.floatOffsetY = 0;
 		this.flying = true;
 		this.active = true;
 		this.phase = Math.random() % (2 * Math.PI);
@@ -221,13 +223,15 @@ class Bird {
 
 	update() {
 		const speed = 0.1;
-		this.x = this.x * (1.0 - speed) + this.targetX * speed;
-		this.y = this.y * (1.0 - speed) + this.targetY * speed;
+		const floatOffsetX = this.flying ? Math.sin(Date.now() / this.frequencyX + this.phase) * 50 : 0.0;
+		const floatOffsetY = this.flying ? Math.sin(Date.now() / this.frequencyY + this.phase) * 30 : 0.0;
+		const targetX = this.targetX + floatOffsetX;
+		const targetY = this.targetY + floatOffsetY;
+		this.x = this.x * (1.0 - speed) + targetX * speed;
+		this.y = this.y * (1.0 - speed) + targetY * speed;
 
-		if (this.flying) {
-			this.x += Math.sin(Date.now() / this.frequencyX + this.phase) * 5
-			this.y += Math.sin(Date.now() / this.frequencyY + this.phase) * 3
-		}
+		const bobbingAmplitude = Math.PI / (this.flying ? 7.0 : 25.0);
+		this.angle = -Math.sin(Date.now() / this.frequencyX + this.phase) * bobbingAmplitude;;
 	}
 
 	draw() {
@@ -238,7 +242,13 @@ class Bird {
 			image = birdImages[this.animationIndex];
 		}
 
-		ctx.drawImage(image, this.x - Bird.width() / 2.0, this.y - Bird.height() / 2.0);
+		ctx.save();
+		ctx.translate(this.x, this.y);
+		ctx.rotate(this.angle);
+		ctx.translate(-Bird.width() / 2.0, -Bird.height() / 2.0);
+		ctx.drawImage(image, 0, 0);
+		ctx.restore();
+
 		this.animationIndex = (this.animationIndex + 1) % birdImages.length
 	}
 
