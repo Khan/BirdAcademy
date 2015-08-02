@@ -183,11 +183,15 @@ class TotalCounter extends Counter {
 
 function updateCounterValues() {
 	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying === true }).length;
-	fencePostCounter.value = onesPosts.filter((post) => { return post.bird !== null }).length;
+	onesFencePostCounter.value = onesPosts.filter((post) => { return post.bird !== null }).length;
+	combinedFencePostCounter.value = combinedPosts.filter((post) => { return post.bird !== null }).length;
 	totalCounter.value = birds.length;
 }
+
 let birdsFlyingCounter = new BirdsFlyingCounter(skySlotsY);
-let fencePostCounter = new Counter(800, "sitting");
+let onesFencePostCounter = new Counter(800, "sitting");
+let combinedFencePostCounter = new Counter(2670, "sitting");
+combinedFencePostCounter.enabled = false;
 let totalCounter = new TotalCounter(1000);
 
 
@@ -530,10 +534,10 @@ const scrollDownArrow = new ScrollDownArrow(980);
 
 let currentStage;
 setCurrentStage("ones");
-setCurrentStage("transition-to-tens");
-setCurrentStage("tens");
-setCurrentStage("transition-to-combined");
-setCurrentStage("combined");
+// setCurrentStage("transition-to-tens");
+// setCurrentStage("tens");
+// setCurrentStage("transition-to-combined");
+// setCurrentStage("combined");
 
 function goToNextStage() {
 	let transitions = {
@@ -562,7 +566,7 @@ function setCurrentStage(newStage) {
 		onesPosts = []
 		birdsFlyingCounter.targetY = tensSkySlotsY;
 		totalCounter.targetY = 2100;
-		fencePostCounter.enabled = false;
+		onesFencePostCounter.enabled = false;
 
 		powerLines = [
 			new PowerLine(755, -367, 1788.5, 298.5, 1363, 374.5, 1381, 27, 1323),
@@ -589,6 +593,7 @@ function setCurrentStage(newStage) {
 		for (let postIndex = 0; postIndex < 9; postIndex++) {
 			combinedPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), combinedFencePostY))
 		}
+		combinedFencePostCounter.enabled = true;
 
 		skySlotsY = combinedSkySlotsY;
 		birdsFlyingCounter.targetY = skySlotsY;
@@ -690,8 +695,10 @@ function drawScene() {
 	updateCounterValues();
 	birdsFlyingCounter.update();
 	birdsFlyingCounter.draw();
-	fencePostCounter.update();
-	fencePostCounter.draw();
+	onesFencePostCounter.update();
+	onesFencePostCounter.draw();
+	combinedFencePostCounter.update();
+	combinedFencePostCounter.draw();
 
 	totalCounter.update();
 	totalCounter.draw();
@@ -702,7 +709,7 @@ function drawScene() {
 	}
 
 	if (currentStage === "transition-to-tens") {
-		if (fencePostCounter.y - birdsFlyingCounter.y < 120) {
+		if (onesFencePostCounter.y - birdsFlyingCounter.y < 120) {
 			goToNextStage();
 		}
 	}
