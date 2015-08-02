@@ -182,10 +182,10 @@ class TotalCounter extends Counter {
 
 
 function updateCounterValues() {
-	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying === true }).length;
+	birdsFlyingCounter.value = birds.filter((bird) => { return bird.flying && bird.active }).length;
 	onesFencePostCounter.value = onesPosts.filter((post) => { return post.bird !== null }).length;
 	combinedFencePostCounter.value = combinedPosts.filter((post) => { return post.bird !== null }).length;
-	totalCounter.value = birds.length;
+	totalCounter.value = birds.filter((bird) => { return bird.active }).length;
 }
 
 let birdsFlyingCounter = new BirdsFlyingCounter(skySlotsY);
@@ -202,6 +202,7 @@ class Bird {
 		this.targetX = this.x;
 		this.targetY = this.y;
 		this.flying = true;
+		this.active = true;
 		this.phase = Math.random() % (2 * Math.PI);
 		this.frequencyX = 800 + Math.random() % 200;
 		this.frequencyY = 600 + Math.random() % 150;
@@ -293,7 +294,7 @@ class Post {
 			} else {
 				// Find a flying bird; make it fly here.
 				for (var bird of birds) {
-					if (bird.flying) {
+					if (bird.flying && bird.active) {
 						this.bird = bird;
 						bird.landAt(this.originX + Post.width() / 2.0, this.originY - 15)
 						break;
@@ -444,7 +445,7 @@ class PowerLine {
 			if (this.birds.length === 0) {
 				for (var birdIndex = 0; birdIndex < birds.length, this.birds.length < 10; birdIndex++) {
 					const bird = birds[birdIndex];
-					if (bird.flying) {
+					if (bird.flying && bird.active) {
 						const dotPoint = this.dotPoints[this.birds.length]
 						bird.landAt(dotPoint[0], dotPoint[1] - 15)
 						this.birds.push(bird);
@@ -597,8 +598,17 @@ function setCurrentStage(newStage) {
 
 		skySlotsY = combinedSkySlotsY;
 		birdsFlyingCounter.targetY = skySlotsY;
+		for (var birdIndex = 0; birdIndex < 30; birdIndex++) {
+			const bird = birds[birdIndex];
+			bird.targetX = (Math.random() > 0.5) ? -canvas.width / 6.0 : canvas.width*1.15;
+			skySpots[bird.positionIndex] = false;
+			bird.active = false;
+		}
+
 		for (var bird of birds)	{
-			bird.flyAway();
+			if (bird.active) {
+				bird.flyAway();
+			}
 		}
 
 		totalCounter.targetY = 3100;
