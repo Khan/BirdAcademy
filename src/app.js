@@ -38,6 +38,7 @@ for (let skySpotsIndex = 0; skySpotsIndex < 50; skySpotsIndex++) {
 	skySpots.push(false);
 }
 
+let suppressNextBirdSequence = false;
 
 class Counter {
 	constructor(y, actionString) {
@@ -463,7 +464,9 @@ class PowerLine {
 				this.landingTime = Date.now();
 
 				if (this.birds.length < 10) {
+					suppressNextBirdSequence = true;
 					setTimeout(() => {
+						suppressNextBirdSequence = false;
 		 				for (var bird of this.birds) {
 		 					bird.flyAway();
 		 				}
@@ -705,7 +708,7 @@ function drawScene() {
 	}
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
-	if (numberOfBirdsInSky === 0) {
+	if (numberOfBirdsInSky === 0 && !suppressNextBirdSequence) {
 		if (birds.length === 0 || (dateWhenSkyEmptied !== null && (Date.now() - dateWhenSkyEmptied) > 750)) {
 			if (currentStage === "ones") {
 				addBird();
