@@ -721,6 +721,23 @@ function drawScene() {
 				if (birds.length > 30) {
 					goToNextStage();
 				}
+			} else if (currentStage === "combined") {
+				const sequence = [8, 3, 7, 5, 9, 2];
+				let accumulator = 35;
+				for (let quantity of sequence) {
+					if (birds.length >= accumulator && birds.length < accumulator + quantity) {
+						for (var i = 0; i < quantity; i++) { addBird(); }
+						break;
+					}
+					accumulator += quantity;
+				}
+				if (accumulator === 35 + sequence.reduce((acc, el) => { return acc + el })) {
+					for (let bird of birds.slice(30)) {
+						bird.flyAway();
+						bird.targetX = (Math.random() > 0.5) ? -canvas.width / 6.0 : canvas.width*1.15;
+						bird.active = false;
+					}
+				}
 			}
 			dateWhenSkyEmptied = null;
 		} else if (dateWhenSkyEmptied === null) {
