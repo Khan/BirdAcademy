@@ -4,7 +4,7 @@ In this interactive environment, students learn about place value and practice r
 
 [May-Li Khoe](http://maylikhoe.com) and [Andy Matuschak](http://andymatuschak.org) made this demo during Khan Academy's [Healthy Hackathon IV](http://healthyhackathon.khanacademy.org).
 
-You can play it yourself [here](http://healthyhackathon.khanacademy.org), but **it requires Chrome Canary or Safari 9.0.**
+[➡️ Play it for yourself!](http://healthyhackathon.khanacademy.org), but **it requires Chrome Canary or Safari 9.0.**
 
 # Next
 
