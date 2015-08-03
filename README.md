@@ -1,4 +1,4 @@
-![header hero](https://raw.githubusercontent.com/andymatuschak/place-value/master/img/header.png)
+![header hero](https://raw.githubusercontent.com/andymatuschak/place-value/master/img/header.png?token=AAAK03AGuX_XaCn1MWY0ah3ncTO77i0oks5VyRq9wA%3D%3D)
 
 In this interactive environment, students learn about place value and practice regrouping by playing with birds.
 
@@ -8,7 +8,7 @@ You can play it yourself [here](http://healthyhackathon.khanacademy.org), but **
 
 # Next
 
-If we continued with this prototype, we'd next have the student practice two-digit addition and subtraction by [having them move two-digit numbers of birds between houses](https://raw.githubusercontent.com/andymatuschak/place-value/master/Counting%20and%20place%20value%206%20futures.png).
+If we continued with this prototype, we'd next have the student practice two-digit addition and subtraction by [having them move two-digit numbers of birds between houses](https://raw.githubusercontent.com/andymatuschak/place-value/master/Counting%20and%20place%20value%206%20futures.png?token=AAAK0_AFO3YcQC-PfosP89rIwhye6Qsvks5VyRqrwA%3D%3D).
 
 Then we might reveal how the operations they're performing correspond to the traditional multidigit arithmetic algorithms.
 
