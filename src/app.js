@@ -1,3 +1,15 @@
+/**
+
+This is code for a hackathon.
+
+It is full of hacks.
+
+Forgive me.
+
+<3 Andy
+
+**/
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
