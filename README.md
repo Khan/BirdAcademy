@@ -1,4 +1,4 @@
-![header hero](https://raw.githubusercontent.com/andymatuschak/place-value/master/img/header.png?token=AAAK03AGuX_XaCn1MWY0ah3ncTO77i0oks5VyRq9wA%3D%3D)
+![header hero](/img/header.png?raw=true)
 
 In this interactive environment, students learn about place value and practice regrouping by playing with birds.
 
