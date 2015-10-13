@@ -609,29 +609,16 @@ for (let waveIndex = 0; waveIndex < waveElements.length; waveIndex++) {
 	waves.push(new Wave(waveElements.item(waveIndex)))
 }
 
-const hills = [
-	new Hill(0, 983, "hill 3"),
-	new Hill(0, 1492, "hill 4"),
-	new Hill(260, 1731, "hill 5"),
-	new Hill(0, 1882, "hill 6"),
-	new Hill(0, 2755, "hill 7"),
-	new Hill(244, 2825, "hill 8")
-];
-const houseImage = loadImage("haus");
-
-const powerLineImage = loadImage("power lines");
-const powerLine2Image = loadImage("power lines 2");
 let powerLines = [];
-
 const scrollDownArrow = new ScrollDownArrow(980);
 
 
 let currentStage;
 setCurrentStage("ones");
-setCurrentStage("transit-to-tens");
-setCurrentStage("tens");
-setCurrentStage("transition-to-combined");
-setCurrentStage("combined");
+// setCurrentStage("transit-to-tens");
+// setCurrentStage("tens");
+// setCurrentStage("transition-to-combined");
+// setCurrentStage("combined");
 
 function goToNextStage() {
 	let transitions = {
@@ -741,22 +728,13 @@ function drawScene() {
 		post.update();
 	}
 
-	hills[0].draw();
 	for (var wave of waves) {
 		wave.update();
 	}
-	hills[1].draw();
-	hills[2].draw();
-	ctx.drawImage(powerLineImage, 0, 1248);
-	hills[3].draw();
-	ctx.drawImage(houseImage, 925, 2200);
-	ctx.drawImage(powerLine2Image, 0, 2095);
+
 	for (var post of combinedPosts) {
 		post.update();
 	}
-	hills[4].draw();
-	hills[5].draw();
-
 
 	for (var bird of birds) {
 		bird.update();
