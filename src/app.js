@@ -435,18 +435,6 @@ class ScrollDownArrow {
 	}
 }
 
-class Hill {
-	constructor(x, y, imageName) {
-		this.x = x;
-		this.y = y;
-		this.image = loadImage(imageName);
-	}
-
-	draw() {
-		ctx.drawImage(this.image, this.x, this.y);
-	}
-}
-
 class PowerLine {
 	static highlightImage() {
 		if (this._highlightImage === undefined) {
