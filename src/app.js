@@ -19,10 +19,10 @@ function loadImage(name) {
 	return image;
 }
 
-const mamaCloud = loadImage("mama cloud");
+const mamaCloud = document.getElementById("mama-cloud");
 mamaCloud.currentX = 100;
 
-const weeCloud = loadImage("wee cloud");
+const weeCloud = document.getElementById("wee-cloud");
 weeCloud.currentX = 400;
 
 const fencePostsImage = loadImage("fence");
@@ -731,16 +731,15 @@ function drawScene() {
 	if (mamaCloud.currentX < -(mamaCloud.width + 100)) {
 		mamaCloud.currentX = canvas.width;
 	}
+	mamaCloud.style.left = mamaCloud.currentX + "px"
 
 	weeCloud.currentX -= 0.5
 	if (weeCloud.currentX < -(weeCloud.width + 100)) {
 		weeCloud.currentX = canvas.width;
 	}
+	weeCloud.style.left = weeCloud.currentX + "px"
 
 	ctx.clearRect(0,0,canvas.width,canvas.height);
-
-	ctx.drawImage(mamaCloud, mamaCloud.currentX, 200);
-	ctx.drawImage(weeCloud, weeCloud.currentX, 300);
 
 	ctx.drawImage(fencePostsImage, 0, 796);
 
