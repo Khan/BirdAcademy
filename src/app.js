@@ -25,7 +25,6 @@ mamaCloud.currentX = 100;
 const weeCloud = document.getElementById("wee-cloud");
 weeCloud.currentX = 400;
 
-const fencePostsImage = loadImage("fence");
 const firstFencePostOriginX = 6;
 const fencePostSpacing = 6;
 const onesFencePostY = 840;
@@ -325,10 +324,20 @@ class Bird {
 }
 
 class Post {
-	constructor(originX, originY) {
+	constructor(fenceElement, originX, originY) {
+		let range = document.createRange();
+		range.setStartAfter(fenceElement);
+		let image = document.createElement("img");
+		image.src = "img/fence-highlight.png";
+		image.style.position = "absolute";
+		image.style.left = originX + "px";
+		image.style.top = originY + "px";
+		range.insertNode(image);
+
+		this.image = image;
+
 		this.originX = originX;
 		this.originY = originY;
-		this.height = 182;
 		this.bird = null;
 	}
 
@@ -338,13 +347,6 @@ class Post {
 
 	static height() {
 		return 182;
-	}
-
-	static highlightImage() {
-		if (this._highlightImage === undefined) {
-			this._highlightImage = loadImage("fence post brightener");
-		}
-		return this._highlightImage;
 	}
 
 	update() {
@@ -370,22 +372,14 @@ class Post {
 			this.pressed = false;
 		}
 		this.lastPressed = Mouse.pressed;
-	}
 
-	draw() {
 		let highlightAlpha = 0.0;
 		if (this.pressed) {
 			highlightAlpha = 1.0;
 		} else if (this.prompt) {
 			highlightAlpha = (Math.sin(Date.now() / 190) + 1.0) / 2.0;
 		}
-
-		if (highlightAlpha > 0.0) {
-			ctx.save();
-			ctx.globalAlpha = 0.5 * highlightAlpha;
-			ctx.drawImage(Post.highlightImage(), this.originX, this.originY);
-			ctx.restore();
-		}
+		this.image.style.opacity = highlightAlpha * 0.5
 	}
 }
 
@@ -602,8 +596,9 @@ class PowerLine {
 let birds = [];
 
 let onesPosts = [];
+const firstFence = document.getElementById("first-fence");
 for (let postIndex = 0; postIndex < 9; postIndex++) {
-	onesPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), onesFencePostY))
+	onesPosts.push(new Post(firstFence, firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), onesFencePostY))
 }
 onesPosts[0].prompt = true;
 let combinedPosts = [];
@@ -633,10 +628,10 @@ const scrollDownArrow = new ScrollDownArrow(980);
 
 let currentStage;
 setCurrentStage("ones");
-// setCurrentStage("transition-to-tens");
-// setCurrentStage("tens");
-// setCurrentStage("transition-to-combined");
-// setCurrentStage("combined");
+setCurrentStage("transit-to-tens");
+setCurrentStage("tens");
+setCurrentStage("transition-to-combined");
+setCurrentStage("combined");
 
 function goToNextStage() {
 	let transitions = {
@@ -690,8 +685,9 @@ function setCurrentStage(newStage) {
 			new PowerLine(726, 412.5, 1998.5, 221, 2344, 297, 2374, -43, 2310),
 		]);
 
+		const secondFence = document.getElementById("second-fence");
 		for (let postIndex = 0; postIndex < 9; postIndex++) {
-			combinedPosts.push(new Post(firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), combinedFencePostY))
+			combinedPosts.push(new Post(secondFence, firstFencePostOriginX + postIndex * (Post.width() + fencePostSpacing), combinedFencePostY))
 		}
 		combinedFencePostCounter.enabled = true;
 
@@ -741,11 +737,8 @@ function drawScene() {
 
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 
-	ctx.drawImage(fencePostsImage, 0, 796);
-
 	for (var post of onesPosts) {
 		post.update();
-		post.draw();
 	}
 
 	hills[0].draw();
@@ -758,10 +751,8 @@ function drawScene() {
 	hills[3].draw();
 	ctx.drawImage(houseImage, 925, 2200);
 	ctx.drawImage(powerLine2Image, 0, 2095);
-	ctx.drawImage(fencePostsImage, 0, 2640);
 	for (var post of combinedPosts) {
 		post.update();
-		post.draw();
 	}
 	hills[4].draw();
 	hills[5].draw();
