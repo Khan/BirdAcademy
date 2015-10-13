@@ -390,29 +390,15 @@ class Post {
 }
 
 class Wave {
-	static images() {
-		if (this._images === undefined) {
-			this._images = [loadImage("wave 1"), loadImage("wave 2")];
-		}
-		return this._images;
-	}
-
-	constructor(x, y, imageIndex) {
-		this.initialX = x;
-		this.initialY = y;
-		this.imageIndex = imageIndex;
+	constructor(waveElement) {
+		this.waveElement = waveElement;
 		this.frequency = 1000 + (Math.random() % 1000);
 		this.amplitudeX = 25
 		this.amplitudeY = 10
 	}
 
 	update() {
-		this.x = Math.sin(Date.now() / this.frequency) * this.amplitudeX + this.initialX;
-		this.y = Math.cos(Date.now() / this.frequency) * this.amplitudeY + this.initialY;
-	}
-
-	draw() {
-		ctx.drawImage(Wave.images()[this.imageIndex], this.x, this.y);
+		this.waveElement.style.transform = "translate(" + Math.sin(Date.now() / this.frequency) * this.amplitudeX + "px, " + Math.cos(Date.now() / this.frequency) * this.amplitudeY + "px)";
 	}
 }
 
@@ -622,12 +608,11 @@ for (let postIndex = 0; postIndex < 9; postIndex++) {
 onesPosts[0].prompt = true;
 let combinedPosts = [];
 
-let waves = [
-	new Wave(86, 1730, 0),
-	new Wave(126, 1770, 1),
-	new Wave(106, 1800, 0),
-	new Wave(86, 1830, 1)
-];
+let waves = [];
+const waveElements = document.querySelectorAll(".wave");
+for (let waveIndex = 0; waveIndex < waveElements.length; waveIndex++) {
+	waves.push(new Wave(waveElements.item(waveIndex)))
+}
 
 const hills = [
 	new Hill(0, 983, "hill 3"),
@@ -767,7 +752,6 @@ function drawScene() {
 	hills[0].draw();
 	for (var wave of waves) {
 		wave.update();
-		wave.draw();
 	}
 	hills[1].draw();
 	hills[2].draw();
