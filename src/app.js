@@ -836,6 +836,12 @@ function drawScene() {
 	}
 }
 
+const sizeWarning = document.getElementById("size-warning");
+window.onresize = () => {
+	sizeWarning.style.display = (window.innerWidth < 1366 || window.innerHeight < 800) ? "block" : "none";
+}
+window.onresize()
+
 
 window.requestAnimFrame = window.requestAnimationFrame ||
 	window.webkitRequestAnimationFrame ||
