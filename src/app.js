@@ -53,7 +53,15 @@ let suppressNextBirdSequence = false;
 
 class Counter {
 	constructor(y, actionString) {
-		const counterX = 1120;
+		this.canvas = document.createElement("canvas");
+		this.canvas.width = 350;
+		this.canvas.height = 100;
+		this.canvas.style.position = "absolute";
+		this.canvas.style.transform = "translateZ(0)";
+		document.body.appendChild(this.canvas);
+		this.context = this.canvas.getContext("2d");
+
+		const counterX = 1080;
 		this.currentX = counterX;
 		this.currentY = y;
 		this.targetX = counterX;
@@ -63,6 +71,7 @@ class Counter {
 		this.actionString = actionString;
 		this.enabled = true;
 		this.scale = 1.0;
+		this.needsDisplay = true;
 	}
 
 	set value(newValue) {
@@ -71,6 +80,7 @@ class Counter {
 		}
 		this._value = newValue;
 
+		const ctx = this.context;
 		ctx.save();
 		ctx.font = Counter.numberFont();
 		this.textMetrics = ctx.measureText(newValue);
@@ -90,10 +100,15 @@ class Counter {
 		return "200 60px 'Proxima Nova'";
 	}
 
+	static counterPadding() {
+		return 13;
+	}
+
 	update() {
 		const opacitySpeed = 0.4;
 		const targetOpacity = this.enabled ? 1.0 : 0.0;
 		this.opacity = this.opacity * (1.0 - opacitySpeed) + targetOpacity * opacitySpeed;
+		this.canvas.style.opacity = this.opacity;
 
 		const positionSpeed = 0.06;
 		this.currentX = this.currentX * (1.0 - positionSpeed) + this.targetX * positionSpeed;
@@ -102,53 +117,69 @@ class Counter {
 		this.x = this.currentX;
 		this.y = this.currentY;
 
+		const oldScale = this.scale;
 		this.scale = this.scale * 0.85 + 1.0 * 0.15;
+
+		const epsilon = 0.001;
+		if (Math.abs(this.scale - oldScale) > epsilon) {
+			this.needsDisplay = true;
+		}
 	}
 
 	draw() {
-		ctx.save();
-		ctx.globalAlpha = this.opacity;
+		const frameX = Math.floor(this.x - this.width - Counter.counterPadding()); + "px";
+		const frameY = Math.floor(this.y - this.height / 2.0); + "px";
+		this.canvas.style.transform = "translate3D(" + frameX + "px, " + frameY + "px, 0px)";
 
-		const counterPadding = 13;
-		const cornerRadius = 5;
+		if (this.needsDisplay) {
+			const ctx = this.context;
+			ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-		const originX = Math.floor(this.x - this.width - counterPadding);
-		const originY = Math.floor(this.y - this.height / 2.0);
+			const cornerRadius = 5;
 
-		// Make a round rect...
-		ctx.save();
-		ctx.beginPath();
-		ctx.translate(this.x, this.y);
-		ctx.scale(this.scale, this.scale);
-		ctx.translate(-this.x, -this.y);
-		ctx.moveTo(originX + cornerRadius, originY);
-		ctx.lineTo(originX + this.width - cornerRadius, originY);
-		ctx.arcTo(originX + this.width, originY, originX + this.width, originY + cornerRadius, cornerRadius);
-		ctx.lineTo(originX + this.width, originY + this.height - cornerRadius);
-		ctx.arcTo(originX + this.width, originY + this.height, originX + this.width - cornerRadius, originY + this.height, cornerRadius);
-		ctx.lineTo(originX + cornerRadius, originY + this.height);
-		ctx.arcTo(originX, originY + this.height, originX, originY + this.height - cornerRadius, cornerRadius);
-		ctx.lineTo(originX, originY + cornerRadius);
-		ctx.arcTo(originX, originY, originX + cornerRadius, originY, cornerRadius);
+			const originX = 20;
+			const originY = 20;
 
-		ctx.save();
-		ctx.globalCompositeOperation = "multiply";
-		ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
-		ctx.shadowBlur = 30;
-		ctx.fillStyle = "rgba(40, 59, 66, 0.33)"; // white 70%
-		ctx.fill();
-		ctx.restore();
+			// Make a round rect...
+			ctx.save();
+			ctx.beginPath();
 
-		ctx.fillStyle = "white";
-		ctx.font = Counter.numberFont();
-		ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - counterPadding);
-		ctx.restore();
+			const counterCenterX = originX + this.width / 2.0;
+			const counterCenterY = originY + this.height / 2.0;
 
-		ctx.save();
-		ctx.font = "200 44px 'Proxima Nova'";
-		const birdString = this.value === 1 ? "bird" : "birds"
-		ctx.fillText(this.descriptionString, originX + this.width + 10, originY + this.height - 14);
-		ctx.restore();
+			ctx.translate(counterCenterX, counterCenterY);
+			ctx.scale(this.scale, this.scale);
+			ctx.translate(-counterCenterX, -counterCenterY);
+			ctx.moveTo(originX + cornerRadius, originY);
+			ctx.lineTo(originX + this.width - cornerRadius, originY);
+			ctx.arcTo(originX + this.width, originY, originX + this.width, originY + cornerRadius, cornerRadius);
+			ctx.lineTo(originX + this.width, originY + this.height - cornerRadius);
+			ctx.arcTo(originX + this.width, originY + this.height, originX + this.width - cornerRadius, originY + this.height, cornerRadius);
+			ctx.lineTo(originX + cornerRadius, originY + this.height);
+			ctx.arcTo(originX, originY + this.height, originX, originY + this.height - cornerRadius, cornerRadius);
+			ctx.lineTo(originX, originY + cornerRadius);
+			ctx.arcTo(originX, originY, originX + cornerRadius, originY, cornerRadius);
+
+			ctx.save();
+			ctx.globalCompositeOperation = "multiply";
+			ctx.shadowColor = "rgba(0, 0, 0, 0.1)";
+			ctx.shadowBlur = 30;
+			ctx.fillStyle = "rgba(40, 59, 66, 0.33)"; // white 70%
+			ctx.fill();
+			ctx.restore();
+
+			ctx.fillStyle = "white";
+			ctx.font = Counter.numberFont();
+			ctx.fillText(this.value, originX + (this.width - this.textMetrics.width) / 2.0, originY + this.height - Counter.counterPadding());
+			ctx.restore();
+
+			ctx.save();
+			ctx.font = "200 44px 'Proxima Nova'";
+			const birdString = this.value === 1 ? "bird" : "birds"
+			ctx.fillText(this.descriptionString, originX + this.width + 10, originY + this.height - 14);
+
+			this.needsDisplay = false;
+		}
 	}
 }
 
@@ -332,6 +363,7 @@ class Post {
 		image.style.position = "absolute";
 		image.style.left = originX + "px";
 		image.style.top = originY + "px";
+		image.style.opacity = 0;
 		range.insertNode(image);
 
 		this.image = image;
