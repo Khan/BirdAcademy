@@ -493,6 +493,15 @@ class PowerLine {
 			this.missingBirdElements.push(missingBirdImage);
 		}
 
+		this.highlightImage = document.createElement("img");
+		this.highlightImage.src = PowerLine.highlightImage().src;
+		this.highlightImage.style.position = "absolute";
+		this.highlightImage.style.left = beamX + "px";
+		this.highlightImage.style.top = beamY + "px";
+		this.highlightImage.style.opacity = 0;
+		this.highlightImage.oldAlpha = 0;
+		document.body.appendChild(this.highlightImage);
+
 		this.centerX = centerX;
 		this.centerY = centerY;
 		this.radius = radius;
@@ -581,41 +590,22 @@ class PowerLine {
 				}
 			}
 		}
-	}
 
-	draw() {
-		if (this.debugDrawing) {
-			ctx.save();
-			ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-			ctx.beginPath();
-			ctx.ellipse(this.centerX, this.centerY, this.radius, this.radius, 0, 0, 2 * Math.PI);
-			ctx.fill();
-			ctx.restore();
-
-			for (let dotPoint of this.dotPoints) {
-				ctx.save();
-				ctx.fillStyle = "red";
-				ctx.beginPath()
-				ctx.ellipse(dotPoint[0], dotPoint[1], 2, 2, 0, 0, 2 * Math.PI);
-				ctx.fill();
-				ctx.restore();
-			}
-		}
-
+		const oldHighlightAlpha = this.highlightImage.oldAlpha;
 		let highlightAlpha = 0.0;
-		if (this.pressed || this.debugDrawing) {
+		if (this.pressed) {
 			highlightAlpha = 1.0;
 		} else if (this.prompt) {
 			highlightAlpha = (Math.sin(Date.now() / 190) + 1.0) / 2.0;
 		}
 
-		if (highlightAlpha > 0.0) {
-			ctx.save();
-			ctx.globalAlpha = 0.5 * highlightAlpha;
-			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
-			ctx.restore();
+		if (Math.abs(highlightAlpha - oldHighlightAlpha)) {
+			this.highlightImage.style.opacity = highlightAlpha * 0.5;
+			this.highlightImage.oldAlpha = highlightAlpha;
 		}
+	}
 
+	draw() {
 		this.counter.draw();
 	}
 
@@ -651,7 +641,7 @@ const scrollDownArrow = new ScrollDownArrow(800);
 
 let currentStage;
 setCurrentStage("ones");
-// setCurrentStage("transition-to-tens");
+setCurrentStage("transition-to-tens");
 // setCurrentStage("tens");
 // setCurrentStage("transition-to-combined");
 // setCurrentStage("combined");
