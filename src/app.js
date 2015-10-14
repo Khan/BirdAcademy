@@ -107,8 +107,12 @@ class Counter {
 	update() {
 		const opacitySpeed = 0.4;
 		const targetOpacity = this.enabled ? 1.0 : 0.0;
+
+		const oldOpacity = this.opacity;
 		this.opacity = this.opacity * (1.0 - opacitySpeed) + targetOpacity * opacitySpeed;
-		this.canvas.style.opacity = this.opacity;
+		if (Math.abs(this.opacity - oldOpacity) > 0.001) {
+			this.canvas.style.opacity = this.opacity;
+		}
 
 		const positionSpeed = 0.06;
 		this.currentX = this.currentX * (1.0 - positionSpeed) + this.targetX * positionSpeed;
@@ -247,6 +251,7 @@ combinedFencePostCounter.enabled = false;
 let totalCounter = new TotalCounter(1000);
 
 let numberOfBirdsSinging = 0;
+const birdContainer = document.getElementById("bird-container");
 class Bird {
 	static audioPaths() {
 		return [
@@ -262,7 +267,8 @@ class Bird {
 	constructor(x, y) {
 		this.element = document.createElement("img");
 		this.element.style.position = "absolute";
-		document.body.appendChild(this.element);
+
+		birdContainer.appendChild(this.element);
 
 		this.audio = new Audio(Bird.audioPaths()[Math.floor(Math.random() * Bird.audioPaths().length)]);
 		this.audio.loop = true;
@@ -454,7 +460,7 @@ class ScrollDownArrow {
 
 		if (newAlpha > 0 || (this.alpha != 0 && newAlpha == 0)) {
 			this.alpha = newAlpha;
-			this.element.style.transform = "translate(" + this.x + "px, " + this.y + ")";
+			this.element.style.transform = "translate(" + this.x + "px, " + this.y + "px)";
 			this.element.style.opacity = this.alpha
 		}
 	}
@@ -476,7 +482,16 @@ class PowerLine {
 	}
 
 	constructor(centerX, centerY, radius, firstDotX, firstDotY, secondDotX, secondDotY, beamX, beamY) {
-		PowerLine.missingBirdImage(); // preheat
+		this.missingBirdElements = []
+		for (var missingBirdIndex = 0; missingBirdIndex < 10; missingBirdIndex++) {
+			const missingBirdImage = document.createElement("img");
+			missingBirdImage.src = PowerLine.missingBirdImage().src
+			missingBirdImage.style.position = "absolute";
+			missingBirdImage.style.display = "hidden";
+			missingBirdImage.hidden = true;
+			birdContainer.appendChild(missingBirdImage);
+			this.missingBirdElements.push(missingBirdImage);
+		}
 
 		this.centerX = centerX;
 		this.centerY = centerY;
@@ -548,6 +563,24 @@ class PowerLine {
 
 			this.pressed = false;
 		}
+
+		for (var birdIndex = 0; birdIndex < 10; birdIndex++) {
+			const missingBirdElement = this.missingBirdElements[birdIndex];
+
+			if (birdIndex >= this.birds.length && this.birds.length > 0 && this.birds.length < 10) {
+				missingBirdElement.style.opacity = (Math.sin((Date.now() - this.landingTime) / 150) + 1.0) / 2.0;
+				missingBirdElement.style.transform = "translate3D(" + (this.dotPoints[birdIndex][0] - missingBirdElement.width / 2.0) + "px, " + (this.dotPoints[birdIndex][1] - 18 - missingBirdElement.height / 2.0) + "px, 0px)"
+				if (missingBirdElement.hidden === true) {
+					missingBirdElement.style.display = "initial";
+					missingBirdElement.hidden = false;
+				}
+			} else {
+				if (missingBirdElement.hidden === false) {
+					missingBirdElement.style.display = "none";
+					missingBirdElement.hidden = true;
+				}
+			}
+		}
 	}
 
 	draw() {
@@ -580,16 +613,6 @@ class PowerLine {
 			ctx.save();
 			ctx.globalAlpha = 0.5 * highlightAlpha;
 			ctx.drawImage(PowerLine.highlightImage(), this.beamX, this.beamY);
-			ctx.restore();
-		}
-
-		if (this.birds.length > 0 && this.birds.length < 10) {
-			ctx.save();
-			ctx.globalAlpha = (Math.sin((Date.now() - this.landingTime) / 150) + 1.0) / 2.0;
-			const promptImage = PowerLine.missingBirdImage();
-			for (var birdIndex = this.birds.length; birdIndex < 10; birdIndex++) {
-				ctx.drawImage(promptImage, this.dotPoints[birdIndex][0] - promptImage.width / 2.0, this.dotPoints[birdIndex][1] - 18 - promptImage.height / 2.0);
-			}
 			ctx.restore();
 		}
 
