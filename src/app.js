@@ -397,18 +397,13 @@ class Wave {
 }
 
 class ScrollDownArrow {
-	static image() {
-		if (this._image === undefined) {
-			this._image = loadImage("chubby arrow");
-		}
-		return this._image;
-	}
-
 	static centerX() {
 		return canvas.width / 2.0;
 	}
 
 	constructor(y) {
+		this.element = document.getElementById("scroll-down");
+
 		this.anchorY = y;
 		this.enabled = false;
 		this.alpha = 0;
@@ -422,16 +417,14 @@ class ScrollDownArrow {
 		const targetAlpha = this.enabled ? 1.0 : 0.0;
 		const alphaSpeed = 0.2;
 		this.targetAlpha = this.targetAlpha * (1.0 - alphaSpeed) + targetAlpha * alphaSpeed;
-		this.alpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.anchorY - ScrollDownArrow.image().height)) / 100.0)));
-	}
+		let newAlpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.anchorY - this.element.height)) / 100.0)));
 
-	draw() {
-		let image = ScrollDownArrow.image();
-
-		ctx.save();
-		ctx.globalAlpha = this.alpha;
-		ctx.drawImage(image, this.x - image.width / 2.0, this.y - image.height / 2.0);
-		ctx.restore();
+		if (newAlpha > 0 || (this.alpha != 0 && newAlpha == 0)) {
+			this.alpha = newAlpha;
+			this.element.style.left = this.x;
+			this.element.style.top = this.y;
+			this.element.style.opacity = this.alpha
+		}
 	}
 }
 
@@ -598,12 +591,12 @@ for (let waveIndex = 0; waveIndex < waveElements.length; waveIndex++) {
 }
 
 let powerLines = [];
-const scrollDownArrow = new ScrollDownArrow(980);
+const scrollDownArrow = new ScrollDownArrow(800);
 
 
 let currentStage;
 setCurrentStage("ones");
-// setCurrentStage("transit-to-tens");
+setCurrentStage("transition-to-tens");
 // setCurrentStage("tens");
 // setCurrentStage("transition-to-combined");
 // setCurrentStage("combined");
@@ -771,7 +764,6 @@ function drawScene() {
 	}
 
 	scrollDownArrow.update();
-	scrollDownArrow.draw();
 
 	updateCounterValues();
 	birdsFlyingCounter.update();
