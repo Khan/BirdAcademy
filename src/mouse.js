@@ -11,6 +11,7 @@
 	exports.Mouse = Mouse;
 
 	var canvas = window;
+	var container = document.getElementById("bird-academy-container");
 
 	// Event Handling
 	var onMouseMove,onTouchMove;
@@ -21,6 +22,8 @@
 	}
 
 	function fixPosition(){
+		Mouse.x -= container.offsetLeft;
+		Mouse.y -= container.offsetTop;
 		//return;
 		/*var BORDER = PEEP_SIZE/2;
 		if(Mouse.x<BORDER) Mouse.x=BORDER;

@@ -10,8 +10,8 @@ Forgive me.
 
 **/
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas = {width: 1366, height: 3400};
+const rootContainer = document.getElementById("bird-academy-container");
 
 function loadImage(name) {
 	const image = new Image();
@@ -58,7 +58,7 @@ class Counter {
 		this.canvas.height = 100;
 		this.canvas.style.position = "absolute";
 		this.canvas.style.transform = "translateZ(0)";
-		document.body.appendChild(this.canvas);
+		rootContainer.appendChild(this.canvas);
 		this.context = this.canvas.getContext("2d");
 
 		const counterX = 1080;
@@ -223,16 +223,17 @@ class TotalCounter extends Counter {
 
 	draw() {
 		super.draw();
-
+/* TODO (reimplement)
 		ctx.save();
 		ctx.beginPath();
 		ctx.moveTo(this.x - this.width/2.0 - 80, this.y - this.height/2.0 - 30);
-		ctx.lineTo(this.x + 220 /* so lazy */, this.y - this.height/2.0 - 30);
+		ctx.lineTo(this.x + 220, this.y - this.height/2.0 - 30);
 		ctx.lineWidth = 3;
 		ctx.lineCapStyle = "round";
 		ctx.strokeStyle = "white";
 		ctx.stroke();
 		ctx.restore();
+*/
 	}
 }
 
@@ -330,7 +331,6 @@ class Bird {
 			if (this.element.src !== image.src) {
 				this.element.src = image.src;
 			}
-			this.element.style.transform = "translateZ(0) translate(" + (this.x - Bird.width() / 2.0) + "px, " + (this.y - Bird.height() / 2.0) + "px) rotate(" + this.angle + "rad)";
 
 			this.animationIndex = (this.animationIndex + 1) % birdImages.length
 		} else if (this.audio !== undefined) {
@@ -338,6 +338,8 @@ class Bird {
 			this.audio.pause();
 			this.audio = undefined;
 		}
+
+		this.element.style.transform = "translateZ(0) translate(" + (this.x - Bird.width() / 2.0) + "px, " + (this.y - Bird.height() / 2.0) + "px) rotate(" + this.angle + "rad)";
 	}
 
 	landAt(x, y) {
@@ -500,7 +502,7 @@ class PowerLine {
 		this.highlightImage.style.top = beamY + "px";
 		this.highlightImage.style.opacity = 0;
 		this.highlightImage.oldAlpha = 0;
-		document.body.appendChild(this.highlightImage);
+		rootContainer.appendChild(this.highlightImage);
 
 		this.centerX = centerX;
 		this.centerY = centerY;
@@ -641,7 +643,7 @@ const scrollDownArrow = new ScrollDownArrow(800);
 
 let currentStage;
 setCurrentStage("ones");
-setCurrentStage("transition-to-tens");
+// setCurrentStage("transition-to-tens");
 // setCurrentStage("tens");
 // setCurrentStage("transition-to-combined");
 // setCurrentStage("combined");
@@ -686,7 +688,7 @@ function setCurrentStage(newStage) {
 		for (var birdIndex = birds.length; birdIndex < 35; birdIndex++) {
 			addBird();
 		}
-		scrollDownArrow.anchorY = 1950;
+		scrollDownArrow.anchorY = 1750;
 		break;
 	case "combined":
 		for (var powerLine of powerLines) {
@@ -747,8 +749,6 @@ function drawScene() {
 		weeCloud.currentX = canvas.width;
 	}
 	weeCloud.style.left = weeCloud.currentX + "px"
-
-	ctx.clearRect(0,0,canvas.width,canvas.height);
 
 	for (var post of onesPosts) {
 		post.update();
