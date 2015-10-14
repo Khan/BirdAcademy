@@ -229,6 +229,10 @@ class Bird {
 	}
 
 	constructor(x, y) {
+		this.element = document.createElement("img");
+		this.element.style.position = "absolute";
+		document.body.appendChild(this.element);
+
 		this.audio = new Audio(Bird.audioPaths()[Math.floor(Math.random() * Bird.audioPaths().length)]);
 		this.audio.loop = true;
 
@@ -278,29 +282,25 @@ class Bird {
 				this.audio.pause();
 				this.audio.currentTime = 0.0;
 			}
+
+			let image;
+			if (this.singing) {
+				image = birdSittingImage;
+			} else {
+				image = birdImages[this.animationIndex];
+			}
+
+			if (this.element.src !== image.src) {
+				this.element.src = image.src;
+			}
+			this.element.style.transform = "translateZ(0) translate(" + (this.x - Bird.width() / 2.0) + "px, " + (this.y - Bird.height() / 2.0) + "px) rotate(" + this.angle + "rad)";
+
+			this.animationIndex = (this.animationIndex + 1) % birdImages.length
 		} else if (this.audio !== undefined) {
 			numberOfBirdsSinging--;
 			this.audio.pause();
 			this.audio = undefined;
 		}
-	}
-
-	draw() {
-		let image;
-		if (this.singing) {
-			image = birdSittingImage;
-		} else {
-			image = birdImages[this.animationIndex];
-		}
-
-		ctx.save();
-		ctx.translate(this.x, this.y);
-		ctx.rotate(this.angle);
-		ctx.translate(-Bird.width() / 2.0, -Bird.height() / 2.0);
-		ctx.drawImage(image, 0, 0);
-		ctx.restore();
-
-		this.animationIndex = (this.animationIndex + 1) % birdImages.length
 	}
 
 	landAt(x, y) {
@@ -403,6 +403,7 @@ class ScrollDownArrow {
 
 	constructor(y) {
 		this.element = document.getElementById("scroll-down");
+		this.height = this.element.height;
 
 		this.anchorY = y;
 		this.enabled = false;
@@ -417,12 +418,11 @@ class ScrollDownArrow {
 		const targetAlpha = this.enabled ? 1.0 : 0.0;
 		const alphaSpeed = 0.2;
 		this.targetAlpha = this.targetAlpha * (1.0 - alphaSpeed) + targetAlpha * alphaSpeed;
-		let newAlpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.anchorY - this.element.height)) / 100.0)));
+		let newAlpha = this.targetAlpha * (1.0 - Math.min(1.0, Math.max(0.0, (window.scrollY - (this.anchorY - this.height)) / 100.0)));
 
 		if (newAlpha > 0 || (this.alpha != 0 && newAlpha == 0)) {
 			this.alpha = newAlpha;
-			this.element.style.left = this.x;
-			this.element.style.top = this.y;
+			this.element.style.transform = "translate(" + this.x + "px, " + this.y + ")";
 			this.element.style.opacity = this.alpha
 		}
 	}
@@ -596,7 +596,7 @@ const scrollDownArrow = new ScrollDownArrow(800);
 
 let currentStage;
 setCurrentStage("ones");
-setCurrentStage("transition-to-tens");
+// setCurrentStage("transition-to-tens");
 // setCurrentStage("tens");
 // setCurrentStage("transition-to-combined");
 // setCurrentStage("combined");
@@ -719,7 +719,6 @@ function drawScene() {
 
 	for (var bird of birds) {
 		bird.update();
-		bird.draw();
 	}
 
 	const numberOfBirdsInSky = skySpots.filter((el) => { return el === true }).length;
