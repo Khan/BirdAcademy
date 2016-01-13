@@ -3,74 +3,148 @@
 		<script src="http://localhost:35729/livereload.js"></script>
 		<title>Introduction to place value | Early math | Khan Academy</title>
 		<style type="text/css">
-		img { pointer-events: none; }
+
+		@font-face {
+		    font-family: 'Proxima Nova';
+		    src: url('https://khanacademy.org/fonts/Proxima-Nova-Regular.woff2?1c9ac9a7') format('woff2'),
+		         url('https://khanacademy.org/fonts/Proxima-Nova-Regular.woff?934549e7') format('woff');
+		    font-weight: normal;
+		    font-style: normal;
+		}
+
+		@font-face {
+		    font-family: 'Proxima Nova';
+		    src: url('https://khanacademy.org/fonts/Proxima-Nova-Semibold.woff2?4151c287') format('woff2'),
+		         url('https://khanacademy.org/fonts/Proxima-Nova-Semibold.woff?6227bce7') format('woff');
+		    font-weight: bold;
+		    font-style: normal;
+		}
+
+		@font-face {
+		    font-family: 'Proxima Nova Semibold';
+		    src: url('https://khanacademy.org/fonts/Proxima-Nova-Semibold.woff2?4151c287') format('woff2'),
+		         url('https://khanacademy.org/fonts/Proxima-Nova-Semibold.woff?6227bce7') format('woff');
+		    font-weight: normal;
+		    font-style: normal;
+		}
+
+		#bird-academy-container img { pointer-events: none; }
 		#size-warning {
-			font-family: "Proxima Nova", sans-serif;
-			font-size: 150%;
-			width: 440px;
-			padding: 60px;
-			top: 140px;
-			left: 50%;
-			margin-left: -280px;
-			position: fixed;
-			background-color: rgba(255, 255, 255, 0.9);
-			border-radius: 20px;
-			display: block;
+		    font-family: "Proxima Nova", sans-serif;
+		    width: 440px;
+		    padding: 60px;
+		    top: 140px;
+		    left: 50%;
+		    margin-left: -280px;
+		    position: fixed;
+		    background-color: rgba(255, 255, 255, 0.9);
+		    border-radius: 20px;
+		    display: none;
 		}
 
 		#size-warning h1 {
-			margin: 0 initial;
+		    margin: 0 initial;
+		    font-size: 48px;
 		}
 
 		#size-warning p {
-			margin-bottom: 0;
+		    margin-bottom: 0;
+		    font-size: 36px;
 		}
 
+		#play-again {
+		    font-family: "Proxima Nova", sans-serif;
+		    background-color: rgba(255, 255, 255, 0.9);
+		    position: absolute;
+		    top: 3600px;
+		    left: 50%;
+		    margin-left: -225px;
+		    width: 400px;
+		    border-radius: 20px;
+		    padding: 25px;
+		    text-align: center;
+		    display: none;
+		    z-index: 2000;
+		}
+
+		#play-again #you-did-it {
+		    font-size: 48px;    
+		}
+
+		#play-again .place-value-closing-message {
+		    font-size: 16px;
+		    color: #aaa;
+		    margin-top: 30px;
+		}
+
+		#play-again #place-value-survey a {
+		    color: #888;
+		}
+
+		#play-again #play-again-link {
+		    display: block;
+		    margin: 25px 0px;
+
+		    font-size: 32px;
+		}
+
+		.urgent-wrapper, .kui-survey {
+		    display: none;
+		}
 		</style>
 	</head>
 	<body style="margin: 0;">
-		<div id="bird-academy-container" style="width: 1366px; height: 3400px; position: relative; margin: 0px auto; overflow: hidden;">
-			<img src="img/sky.png" style="position: absolute;" />
-			<img src="img/BA header.png" style="position: absolute;" />
-			<img src="img/hill 0.png" style="position: absolute; top: 625px;" />
-			<img src="img/hill 1.png" style="position: absolute; top: 662px;" />
-			<img src="img/hill 2.png" style="position: absolute; top: 715px;" />
+		<div id="bird-academy-container" style="width: 1366px; height: 3400px; position: relative; margin: 0px auto; overflow: hidden; transform-origin: 0% 0%;">
+		    <img src="img/sky.png" style="position: absolute;" />
+		    <img src="img/BA-header.png" style="position: absolute; top: 90px; left: 90px;" />
+		    <img src="img/hill-0.png" style="position: absolute; top: 511px;" />
+		    <img src="img/hill-1.png" style="position: absolute; top: 548px;" />
+		    <img src="img/hill-2.png" style="position: absolute; top: 601px;" />
 
-			<img id="first-fence" src="img/fence.png" style="position: absolute; top: 796px" />
+		    <img id="first-fence" src="img/fence.png" style="position: absolute; top: 682px" />
 
-			<img src="img/hill 3.png" style="position: absolute; top: 983px;" />
+		    <img src="img/hill-3.png" style="position: absolute; top: 869px;" />
 
-			<img class="wave" src="img/wave 1.png" style="position: absolute; top: 1730px; left: 86px" />
-			<img class="wave" src="img/wave 2.png" style="position: absolute; top: 1770px; left: 126px" />
-			<img class="wave" src="img/wave 1.png" style="position: absolute; top: 1800px; left: 106px" />
-			<img class="wave" src="img/wave 2.png" style="position: absolute; top: 1830px; left: 86px" />
+		    <img class="wave" src="img/wave-1.png" style="position: absolute; top: 1616px; left: 86px" />
+		    <img class="wave" src="img/wave-2.png" style="position: absolute; top: 1656px; left: 126px" />
+		    <img class="wave" src="img/wave-1.png" style="position: absolute; top: 1686px; left: 106px" />
+		    <img class="wave" src="img/wave-2.png" style="position: absolute; top: 1716px; left: 86px" />
 
-			<img src="img/hill 4.png" style="position: absolute; top: 1492px;" />
-			<img src="img/power lines.png" style="position: absolute; top: 1248px" />
-			<img src="img/hill 5.png" style="position: absolute; left: 260px; top: 1731px;" />
-			<img src="img/hill 6.png" style="position: absolute; top: 1882px;" />
-			<img src="img/haus.png" style="position: absolute; left: 925px; top: 2200px" />
+		    <img src="img/hill-4.png" style="position: absolute; top: 1378px;" />
+		    <img src="img/power-lines.png" style="position: absolute; top: 1134px" />
+		    <img src="img/hill-5.png" style="position: absolute; left: 260px; top: 1617px;" />
+		    <img src="img/hill-6.png" style="position: absolute; top: 1768px;" />
+		    <img src="img/haus.png" style="position: absolute; left: 925px; top: 2086px" />
 
-			<img src="img/power lines 2.png" style="position: absolute; top: 2095px" />
-			<img id="second-fence" src="img/fence.png" style="position: absolute; top: 2640px" />
+		    <img src="img/power-lines-2.png" style="position: absolute; top: 1981px" />
+		    <img id="second-fence" src="img/fence.png" style="position: absolute; top: 2526px" />
 
-			<img src="img/hill 7.png" style="position: absolute; top: 2755px;" />
-			<img src="img/hill 8.png" style="position: absolute; left: 244px; top: 2825px;" />
+		    <img src="img/hill-7.png" style="position: absolute; top: 2641px;" />
+		    <img src="img/hill-8.png" style="position: absolute; left: 244px; top: 2711px;" />
 
-			<img id="mama-cloud" src="img/mama cloud.png" style="position: absolute; top: 200px; transform: translateZ(0)" />
-			<img id="wee-cloud" src="img/wee cloud.png" style="position: absolute; top: 300px; transform: translateZ(0)" />
+		    <img id="mama-cloud" src="img/mama-cloud.png" style="position: absolute; top: 200px; transform: translateZ(0)" />
+		    <img id="wee-cloud" src="img/wee-cloud.png" style="position: absolute; top: 300px; transform: translateZ(0)" />
 
-			<img id="scroll-down" src="img/chubby arrow.png" style="position: absolute; opacity: 0" />
+		    <img id="scroll-down" src="img/chubby-arrow.png" style="position: absolute; opacity: 0;" />
 
-			<div id="bird-container" style="position:absolute;"></div>
+		    <div id="bird-container" style="position:absolute;"></div>
+
+		    <div id="blackout" style="z-index: 1000; background-color: rgba(0, 0, 0, 0.4); position: absolute; width: 1366px; height: 100%; top: 0px; left: 0px; display: none; opacity: 0"></div>
+
+		    <div id="play-again">
+		        <p id="you-did-it">You did it!</p>
+		        <a id="play-again-link" href="#" role="button">Play again?</a>
+		        <p class="place-value-closing-message">Know someone else who would like this?<br />Please pass it along!</p>
+		    </div>
 		</div>
 
 		<div id="size-warning">
-			<h1>More space, please!</h1>
-			<p>This experiment requires your browser to be a little bigger. If it's possible, please resize your browser. If your browser is already as big as it can be, we're sorry, and we'll have another experiment for you to try soon!</p>
+		    <h1>More space, please!</h1>
+		    <p id="size-warning-text">This experiment requires your browser to be a little bigger. If it's possible, please resize your browser. If your browser is already as big as it can be, we're sorry, and we'll have another experiment for you to try soon!"</p>
 		</div>
 
 		<script src="dist/mouse.js"></script>
+		<script src="dist/blip.js"></script>
 		<script src="dist/app.js"></script>
 	</body>
 </html>
