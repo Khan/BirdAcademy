@@ -102,7 +102,7 @@ class Jukebox {
         for (var powerLineIndex = 0; powerLineIndex < 3; powerLineIndex++) {
             if (basePowerLineIndex !== null) {
                 const powerLine = powerLines[basePowerLineIndex + powerLineIndex];
-                shouldSing = powerLine.birds.length === 10 && powerLine.birds[0].singing;
+                let shouldSing = powerLine.birds.length === 10 && powerLine.birds[0].singing;
                 if (shouldSing) {
                     numberOfPhrases = 2;
                 }
